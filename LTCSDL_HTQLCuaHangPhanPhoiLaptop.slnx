@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="BUS_HTQLCuaHangLaptop/BUS_HTQLCuaHangLaptop.csproj" Id="5fd99d19-846b-4314-ab71-e12992c8e961" />
+  <Project Path="DAL_HTQLCuaHangLaptop/DAL_HTQLCuaHangLaptop.csproj" Id="7ba4c257-a25d-41ae-b237-9f07a1b50114" />
+  <Project Path="DTO_HTQLCuaHangLaptop/DTO_HTQLCuaHangLaptop.csproj" Id="e00a94e9-b72a-4995-90a6-8c96dc85d65b" />
+  <Project Path="GUI_HTQLCuaHangLaptop/GUI_HTQLCuaHangLaptop.csproj" Id="052b070d-773e-4472-87c9-c26deb1e09f6" />
+  <Project Path="Website/Website.csproj" Id="4a8ddb97-33f8-4887-8581-9eb622bd1ec6" />
+</Solution>

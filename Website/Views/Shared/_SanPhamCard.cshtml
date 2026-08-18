@@ -1,0 +1,52 @@
+@* Partial: Card sản phẩm tái sử dụng
+   Model: System.Data.DataRow (row từ DataTable LayDanhSachLoaiSP / LayLoaiSPTheoDanhMuc)
+   Dùng: @await Html.PartialAsync("_SanPhamCard", row)
+*@
+@model System.Data.DataRow
+
+@{
+    string FormatGia(object val)
+    {
+        if (val == null || val == DBNull.Value) return "Liên hệ";
+        if (decimal.TryParse(val.ToString(), out decimal g))
+            return g.ToString("N0") + " ₫";
+        return "Liên hệ";
+    }
+
+    string danhMuc = Model["DanhMuc"]?.ToString() ?? "";
+    string icon = danhMuc switch
+    {
+        "Laptop"   => "💻",
+        "Chuột"    => "🖱️",
+        "Bàn Phím" => "⌨️",
+        _          => "📦"
+    };
+
+    string maLoaiSP = Model["MaLoaiSP"]?.ToString() ?? "";
+    string tenLoai  = Model["TenLoai"]?.ToString()  ?? "";
+    string tenHang  = Model["TenHang"]?.ToString()  ?? "";
+}
+
+<div class="bb-product-card h-100">
+    <div class="bb-product-img">@icon</div>
+    <div class="bb-product-body">
+        <div class="bb-product-brand">@tenHang</div>
+        <div class="bb-product-name">@tenLoai</div>
+        <div class="bb-product-price">@FormatGia(Model["GiaBanGoc"])</div>
+        <div class="bb-product-actions mt-auto">
+            <a asp-controller="SanPham" asp-action="ChiTiet"
+               asp-route-maLoaiSP="@maLoaiSP"
+               class="bb-btn bb-btn-outline bb-btn-sm flex-fill">
+                Xem chi tiết
+            </a>
+            <form asp-controller="GioHang" asp-action="Them" method="post" class="d-flex">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="maLoaiSP" value="@maLoaiSP" />
+                <button type="submit" class="bb-btn bb-btn-primary bb-btn-sm bb-btn-icon"
+                        title="Thêm vào giỏ hàng">
+                    <i class="fas fa-cart-plus"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,232 @@
+@model Website.Models.DatHangViewModel
+@{
+    ViewData["Title"] = "Đặt Hàng";
+}
+
+<!-- Breadcrumb -->
+<div class="bb-breadcrumb">
+    <a href="/">Trang chủ</a>
+    <span>/</span>
+    <a asp-controller="GioHang" asp-action="Index">Giỏ hàng</a>
+    <span>/</span>
+    <span class="active">Đặt hàng</span>
+</div>
+
+<h1 class="bb-section-title mb-4">📦 Xác Nhận Đặt Hàng</h1>
+
+<form asp-action="XacNhanDatHang" method="post">
+    @Html.AntiForgeryToken()
+    <div class="row g-4">
+        <!-- Thông tin giao hàng -->
+        <div class="col-lg-7">
+            <div class="bb-card mb-4">
+                <div class="bb-card-header">
+                    <i class="fas fa-map-marker-alt text-red"></i> Thông Tin Nhận Hàng
+                </div>
+
+                <div class="bb-form-group">
+                    <label class="bb-label" asp-for="DiaChiGiaoHang">Địa chỉ giao hàng</label>
+                    <input asp-for="DiaChiGiaoHang" class="bb-input"
+                           placeholder="Để trống nếu nhận tại cửa hàng"
+                           id="txtDiaChiGiaoHang" />
+                    <small class="text-muted">Có thể để trống nếu đến cửa hàng nhận trực tiếp</small>
+                </div>
+
+                <div class="bb-form-group">
+                    <label class="bb-label" asp-for="GhiChu">Ghi chú</label>
+                    <textarea asp-for="GhiChu" class="bb-input" rows="3"
+                              placeholder="Ghi chú thêm cho đơn hàng (không bắt buộc)"
+                              id="txtGhiChu"></textarea>
+                </div>
+            </div>
+
+            <!-- Phương thức thanh toán -->
+            <div class="bb-card">
+                <div class="bb-card-header">
+                    <i class="fas fa-credit-card text-red"></i> Phương Thức Thanh Toán
+                </div>
+
+                <div class="d-flex flex-column gap-3">
+                    <label class="bb-filter-option p-3 border rounded" style="cursor:pointer;border-color:#E0E0E0 !important"
+                           id="lblTienMat">
+                        <input type="radio" asp-for="PhuongThucThanhToan" value="Tiền Mặt"
+                               onchange="highlightPayment()"
+                               class="me-2" checked />
+                        <span style="font-size:18px;margin-right:8px">💵</span>
+                        <div>
+                            <div style="font-weight:700">Tiền Mặt</div>
+                            <div class="text-muted" style="font-size:12px">Thanh toán khi nhận hàng (COD)</div>
+                        </div>
+                    </label>
+
+                    <label class="bb-filter-option p-3 border rounded" style="cursor:pointer;border-color:#E0E0E0 !important"
+                           id="lblChuyenKhoan">
+                        <input type="radio" asp-for="PhuongThucThanhToan" value="Chuyển Khoản"
+                               onchange="highlightPayment()"
+                               class="me-2" />
+                        <span style="font-size:18px;margin-right:8px">🏦</span>
+                        <div>
+                            <div style="font-weight:700">Chuyển Khoản</div>
+                            <div class="text-muted" style="font-size:12px">Chuyển khoản ngân hàng</div>
+                        </div>
+                    </label>
+
+                    <label class="bb-filter-option p-3 border rounded" style="cursor:pointer;border-color:#E0E0E0 !important"
+                           id="lblThe">
+                        <input type="radio" asp-for="PhuongThucThanhToan" value="Thẻ"
+                               onchange="highlightPayment()"
+                               class="me-2" />
+                        <span style="font-size:18px;margin-right:8px">💳</span>
+                        <div>
+                            <div style="font-weight:700">Thẻ</div>
+                            <div class="text-muted" style="font-size:12px">Thẻ tín dụng / ghi nợ</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tóm tắt đơn hàng -->
+        <div class="col-lg-5">
+            <div class="bb-order-summary">
+                <div class="bb-card-header">
+                    <i class="fas fa-shopping-cart text-red"></i> Đơn Hàng (@Model.DanhSachSanPham.Count loại SP)
+                </div>
+
+                @foreach (var item in Model.DanhSachSanPham)
+                {
+                    string icon = item.DanhMuc switch { "Laptop" => "💻", "Chuột" => "🖱️", "Bàn Phím" => "⌨️", _ => "📦" };
+                    <div class="bb-summary-row">
+                        <span style="font-size:13px">
+                            @icon @item.TenLoai
+                            <span class="bb-badge bb-badge-gray ms-1">×@item.SoLuong</span>
+                        </span>
+                        <span style="font-weight:700;white-space:nowrap">@item.ThanhTien.ToString("N0") ₫</span>
+                    </div>
+                }
+
+                <div class="bb-summary-row">
+                    <span>Phí giao hàng</span>
+                    <span class="bb-badge bb-badge-success">Miễn phí</span>
+                </div>
+
+                <div class="mt-4 mb-2" style="font-weight: 700; border-top: 1px dashed #E0E0E0; pt-2: 8px;">
+                    <i class="fas fa-tags text-red"></i> Chọn Khuyến Mãi
+                </div>
+                <div class="d-flex flex-column gap-2 mb-3">
+                    <label class="p-2 border rounded d-flex align-items-center justify-content-between" style="cursor:pointer; font-size: 13px;" id="lblKM_NONE">
+                        <div class="d-flex align-items-center">
+                            <input type="radio" asp-for="MaKM" value="NONE" checked onchange="updatePromotion()" class="me-2" />
+                            <strong>Không áp dụng</strong>
+                        </div>
+                        <span class="text-muted" data-giam="0">0 ₫</span>
+                    </label>
+
+                    @if (ViewBag.DanhSachKM != null)
+                    {
+                        foreach (var km in ViewBag.DanhSachKM)
+                        {
+                            <label class="p-2 border rounded d-flex align-items-center justify-content-between" style="cursor:pointer; font-size: 13px;" id="lblKM_@km.MaKM">
+                                <div>
+                                    <div class="d-flex align-items-center">
+                                        <input type="radio" asp-for="MaKM" value="@km.MaKM" onchange="updatePromotion()" class="me-2" />
+                                        <strong>@km.TenKM</strong>
+                                    </div>
+                                    <div style="font-size:11px; color:#666" class="ms-4">@km.MoTa</div>
+                                </div>
+                                <span class="text-danger font-weight-bold" data-giam="@km.TienGiam">-@km.TienGiam.ToString("N0") ₫</span>
+                            </label>
+                        }
+                    }
+                </div>
+
+                <div class="bb-summary-row" id="summary-discount-row" style="display:none">
+                    <span>Giảm giá</span>
+                    <span class="text-danger" style="font-weight:700">0 ₫</span>
+                </div>
+
+                <div class="bb-summary-total" style="border-top: 1px solid #E0E0E0; padding-top: 12px;">
+                    <span>Tổng thanh toán</span>
+                    <span id="summary-total-value">@Model.TongTien.ToString("N0") ₫</span>
+                </div>
+
+                <button type="submit" class="bb-btn bb-btn-primary bb-btn-block bb-btn-lg mt-4"
+                        id="btnXacNhan"
+                        onclick="this.disabled=true;this.innerHTML='<i class=\'fas fa-spinner fa-spin me-2\'></i> Đang xử lý...';this.form.submit()">
+                    <i class="fas fa-check-circle me-2"></i> Xác Nhận Đặt Hàng
+                </button>
+
+                <a asp-controller="GioHang" asp-action="Index"
+                   class="bb-btn bb-btn-outline bb-btn-block mt-2">
+                    <i class="fas fa-arrow-left me-2"></i> Quay lại giỏ hàng
+                </a>
+
+                <div class="text-center mt-3 text-muted" style="font-size:12px">
+                    <i class="fas fa-shield-alt me-1"></i> Đơn hàng sẽ được xử lý trong 24 giờ
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+<script>
+function highlightPayment() {
+    const labels = ['lblTienMat', 'lblChuyenKhoan', 'lblThe'];
+    labels.forEach(id => {
+        const el = document.getElementById(id);
+        const radio = el.querySelector('input[type="radio"]');
+        el.style.borderColor = radio.checked ? '#C62828' : '#E0E0E0';
+        el.style.background  = radio.checked ? '#FFEBEE' : 'white';
+    });
+}
+
+function updatePromotion() {
+    // Lấy tất cả radio button có tên MaKM (đã được sinh ra bởi tag helper asp-for="MaKM")
+    const radios = document.querySelectorAll('input[type="radio"][name="MaKM"]');
+    let tienGiam = 0;
+    
+    radios.forEach(radio => {
+        // Lấy thẻ label chứa radio này để đổi màu viền/nền
+        const parentLabel = radio.closest('label');
+        if (parentLabel) {
+            if (radio.checked) {
+                parentLabel.style.borderColor = '#C62828';
+                parentLabel.style.background = '#FFEBEE';
+                
+                // Lấy tiền giảm từ thuộc tính data-giam của span bên trong label
+                const spanGiam = parentLabel.querySelector('span[data-giam]');
+                if (spanGiam) {
+                    tienGiam = parseFloat(spanGiam.getAttribute('data-giam')) || 0;
+                }
+            } else {
+                parentLabel.style.borderColor = '#E0E0E0';
+                parentLabel.style.background = 'white';
+            }
+        }
+    });
+
+    const tongTienGoc = @Model.TongTien;
+    const tongThanhToan = Math.max(0, tongTienGoc - tienGiam);
+
+    // Cập nhật dòng hiển thị giảm giá
+    const divTienGiam = document.getElementById("summary-discount-row");
+    if (tienGiam > 0) {
+        divTienGiam.innerHTML = `<span>Giảm giá</span><span class="text-danger" style="font-weight:700">-` + tienGiam.toLocaleString('vi-VN') + ` ₫</span>`;
+        divTienGiam.style.display = "flex";
+    } else {
+        divTienGiam.style.display = "none";
+    }
+
+    // Cập nhật tổng số tiền thanh toán hiển thị
+    const spanTotal = document.getElementById("summary-total-value");
+    if (spanTotal) {
+        spanTotal.innerText = tongThanhToan.toLocaleString('vi-VN') + " ₫";
+    }
+}
+
+// Init
+highlightPayment();
+updatePromotion();
+</script>
+}

@@ -1,0 +1,83 @@
+@model dynamic
+@{
+    ViewData["Title"] = "Yêu Cầu Đổi Trả Mới";
+    var serials = ViewBag.Serials as List<KeyValuePair<string, string>>;
+}
+
+<div class="bb-breadcrumb">
+    <a href="/">Trang chủ</a>
+    <span>/</span>
+    <a asp-action="DanhSach">Đổi trả của tôi</a>
+    <span>/</span>
+    <span class="active">Yêu cầu đổi trả mới</span>
+</div>
+
+<h1 class="bb-section-title mb-4">🔄 Yêu Cầu Đổi Trả Sản Phẩm</h1>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="bb-card shadow-sm">
+            <div class="bb-card-header">
+                <i class="fas fa-file-invoice text-red"></i> Đăng Ký Yêu Cầu Đổi / Trả Sản Phẩm Lỗi
+            </div>
+
+            <form asp-action="YeuCau" method="post" class="p-4">
+                @Html.AntiForgeryToken()
+
+                <!-- Chọn sản phẩm -->
+                <div class="bb-form-group mb-4">
+                    <label for="maSerial" class="bb-label mb-2 fw-semibold">Sản phẩm cần đổi trả <span class="text-danger">*</span></label>
+                    <select name="maSerial" id="maSerial" class="bb-input form-select" required style="height: auto; padding: 12px; font-size: 14px;">
+                        <option value="">-- Chọn sản phẩm của bạn --</option>
+                        @if (serials != null && serials.Count > 0)
+                        {
+                            foreach (var s in serials)
+                            {
+                                <option value="@s.Key">@s.Value</option>
+                            }
+                        }
+                    </select>
+                    <small class="text-muted mt-2 d-block">
+                        <i class="fas fa-info-circle me-1"></i> Chỉ hiển thị các sản phẩm thuộc đơn hàng đã hoàn thành, trong thời hạn 30 ngày kể từ ngày mua và chưa từng yêu cầu đổi trả trước đó.
+                    </small>
+                </div>
+
+                <!-- Chọn hình thức xử lý -->
+                <div class="bb-form-group mb-4">
+                    <label for="loaiXuLy" class="bb-label mb-2 fw-semibold">Hình thức xử lý mong muốn <span class="text-danger">*</span></label>
+                    <select name="loaiXuLy" id="loaiXuLy" class="bb-input form-select" required style="height: auto; padding: 12px; font-size: 14px;">
+                        <option value="">-- Chọn hình thức xử lý --</option>
+                        <option value="Đổi Máy">🔄 Đổi Máy Mới (Cùng loại/Cấu hình)</option>
+                        <option value="Hoàn Tiền">💵 Hoàn Tiền (Vào tài khoản đã mua)</option>
+                    </select>
+                </div>
+
+                <!-- Lý do đổi trả -->
+                <div class="bb-form-group mb-4">
+                    <label for="lyDo" class="bb-label mb-2 fw-semibold">Lý do chi tiết đổi trả sản phẩm <span class="text-danger">*</span></label>
+                    <textarea name="lyDo" id="lyDo" class="bb-input" rows="5" required
+                              placeholder="Vui lòng cung cấp chi tiết lỗi của nhà sản xuất hoặc vấn đề kỹ thuật để hệ thống phê duyệt nhanh chóng (Ví dụ: Máy lỗi card màn hình rời, màn hình chớp tắt liên tục, loa không phát âm thanh...)"
+                              style="resize: none; font-size: 14px; padding: 12px;"></textarea>
+                </div>
+
+                <!-- Các nút hành động -->
+                <div class="d-flex gap-3 justify-content-end mt-4">
+                    <a asp-action="DanhSach" class="bb-btn bb-btn-outline" style="min-width: 120px; padding: 10px;">
+                        <i class="fas fa-times me-2"></i> Hủy
+                    </a>
+                    <button type="submit" class="bb-btn bb-btn-primary" style="min-width: 160px; padding: 10px;" id="btnSubmitYeuCau">
+                        <i class="fas fa-paper-plane me-2"></i> Gửi Yêu Cầu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

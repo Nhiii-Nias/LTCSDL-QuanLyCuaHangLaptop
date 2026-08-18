@@ -1,0 +1,298 @@
+@{
+    ViewData["Title"] = "Trang Chủ";
+    ViewData["MetaDescription"] = "Cửa hàng laptop BulaBula - Laptop chính hãng giá tốt, bảo hành uy tín.";
+
+    var dtLaptop  = ViewBag.DanhSachLaptop  as System.Data.DataTable;
+    var dtChuot   = ViewBag.DanhSachChuot   as System.Data.DataTable;
+    var dtBanPhim = ViewBag.DanhSachBanPhim as System.Data.DataTable;
+    var dtKM      = ViewBag.KhuyenMai       as System.Data.DataTable;
+    var dtHSX     = ViewBag.DanhSachHSX     as System.Data.DataTable;
+    var dtAll     = ViewBag.DanhSachLoaiSP  as System.Data.DataTable;
+
+    int soLaptop  = dtLaptop?.Rows.Count  ?? 0;
+    int soChuot   = dtChuot?.Rows.Count   ?? 0;
+    int soBanPhim = dtBanPhim?.Rows.Count ?? 0;
+
+    string FormatGia(object val) {
+        if (val == null || val == DBNull.Value) return "Liên hệ";
+        if (decimal.TryParse(val.ToString(), out decimal g))
+            return g.ToString("N0") + " ₫";
+        return "Liên hệ";
+    }
+
+    string DanhMucIcon(string dm) => dm switch {
+        "Laptop"   => "💻",
+        "Chuột"    => "🖱️",
+        "Bàn Phím" => "⌨️",
+        _          => "📦"
+    };
+}
+
+<!-- ── HERO BANNER ──────────────────────────────────────────────────── -->
+<div class="bb-hero">
+    <div class="bb-hero-content">
+        <span class="bb-hero-badge">✨ Cửa hàng laptop uy tín số 1</span>
+        <h1>Laptop Chính Hãng<br>Giá Tốt Mỗi Ngày</h1>
+        <p>Hàng trăm mẫu laptop từ các thương hiệu hàng đầu thế giới.<br>
+           Bảo hành chính hãng, đổi trả trong 30 ngày, giao hàng tận nơi.</p>
+        <div class="bb-hero-actions">
+            <a asp-controller="SanPham" asp-action="Index" asp-route-danhMuc="Laptop" class="bb-btn-hero bb-btn">
+                <i class="fas fa-laptop me-2"></i> Xem tất cả laptop
+            </a>
+            <a asp-controller="BaoHanh" asp-action="Index" class="bb-btn-hero-outline bb-btn">
+                <i class="fas fa-shield-alt me-2"></i> Tra cứu bảo hành
+            </a>
+        </div>
+    </div>
+</div>
+
+@if (ViewBag.DbError != null)
+{
+    <div class="bb-alert bb-alert-warning">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>Chưa kết nối được cơ sở dữ liệu. Vui lòng kiểm tra cấu hình. <small>(@ViewBag.DbError)</small></span>
+    </div>
+}
+
+<!-- ── DANH MỤC ──────────────────────────────────────────────────────── -->
+<div class="mb-4">
+    <div class="bb-section-header">
+        <h2 class="bb-section-title">Danh Mục Sản Phẩm</h2>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <a asp-controller="SanPham" asp-action="Index" asp-route-danhMuc="Laptop" class="bb-category-card">
+                <span class="bb-category-icon">💻</span>
+                <div class="bb-category-name">Laptop</div>
+                <div class="bb-category-count">@soLaptop sản phẩm</div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a asp-controller="SanPham" asp-action="Index" asp-route-danhMuc="Chuột" class="bb-category-card">
+                <span class="bb-category-icon">🖱️</span>
+                <div class="bb-category-name">Chuột</div>
+                <div class="bb-category-count">@soChuot sản phẩm</div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a asp-controller="SanPham" asp-action="Index" asp-route-danhMuc="Bàn Phím" class="bb-category-card">
+                <span class="bb-category-icon">⌨️</span>
+                <div class="bb-category-name">Bàn Phím</div>
+                <div class="bb-category-count">@soBanPhim sản phẩm</div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ── KHUYẾN MÃI ────────────────────────────────────────────────────── -->
+@if (dtKM != null && dtKM.Rows.Count > 0)
+{
+    <div class="mb-4">
+        <div class="bb-section-header">
+            <h2 class="bb-section-title">🎉 Khuyến Mãi Đang Diễn Ra</h2>
+            <span class="bb-badge bb-badge-danger">@dtKM.Rows.Count chương trình</span>
+        </div>
+        <div class="row g-3">
+            @foreach (System.Data.DataRow km in dtKM.Rows)
+            {
+                <div class="col-md-6 col-lg-3">
+                    <div class="bb-promo-card">
+                        <div class="bb-promo-label">🔥 ĐANG DIỄN RA</div>
+                        <div class="bb-promo-name">@km["TenKM"]</div>
+                        <div class="bb-promo-desc">
+                            Đối tượng: @km["DoiTuong"]
+                            @if (km["MucGiamSP"] != DBNull.Value)
+                            { <span> — Giảm @km["MucGiamSP"]% SP</span> }
+                            @if (km["MucGiamDH"] != DBNull.Value)
+                            { <span> — Giảm @km["MucGiamDH"]% đơn hàng</span> }
+                        </div>
+                        <div class="bb-promo-date">
+                            📅 @Convert.ToDateTime(km["NgayBatDau"]).ToString("dd/MM") –
+                               @Convert.ToDateTime(km["NgayKetThuc"]).ToString("dd/MM/yyyy")
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<!-- ── SẢN PHẨM NỔI BẬT — LAPTOP ─────────────────────────────────────── -->
+@if (dtLaptop != null && dtLaptop.Rows.Count > 0)
+{
+    <div class="mb-4">
+        <div class="bb-section-header">
+            <h2 class="bb-section-title">💻 Laptop Nổi Bật</h2>
+            <a asp-controller="SanPham" asp-action="Index" asp-route-danhMuc="Laptop"
+               class="bb-btn bb-btn-outline bb-btn-sm">
+                Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+        <div class="row g-3">
+            @{
+                int countLaptop = 0;
+                foreach (System.Data.DataRow row in dtLaptop.Rows)
+                {
+                    if (countLaptop++ >= 8) break;
+            }
+                countLaptop = 0;
+                foreach (System.Data.DataRow row in dtLaptop.Rows)
+                {
+                    if (countLaptop++ >= 8) break;
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="bb-product-card">
+                    <div class="bb-product-img">💻</div>
+                    <div class="bb-product-body">
+                        <div class="bb-product-brand">@row["TenHang"]</div>
+                        <div class="bb-product-name">@row["TenLoai"]</div>
+                        <div class="bb-product-price">@FormatGia(row["GiaBanGoc"])</div>
+                        <div class="bb-product-actions">
+                            <a asp-controller="SanPham" asp-action="ChiTiet"
+                               asp-route-maLoaiSP="@row["MaLoaiSP"]"
+                               class="bb-btn bb-btn-outline bb-btn-sm flex-fill">
+                                Xem chi tiết
+                            </a>
+                            <form asp-controller="GioHang" asp-action="Them" method="post" class="d-flex">
+                                <input type="hidden" name="maLoaiSP" value="@row["MaLoaiSP"]" />
+                                <button type="submit" class="bb-btn bb-btn-primary bb-btn-sm bb-btn-icon"
+                                        title="Thêm vào giỏ">
+                                    <i class="fas fa-cart-plus"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                }
+            }
+        </div>
+    </div>
+}
+
+<!-- ── SẢN PHẨM PHỤ KIỆN ─────────────────────────────────────────────── -->
+@if ((dtChuot != null && dtChuot.Rows.Count > 0) || (dtBanPhim != null && dtBanPhim.Rows.Count > 0))
+{
+    <div class="mb-4">
+        <div class="bb-section-header">
+            <h2 class="bb-section-title">🖱️ Phụ Kiện</h2>
+            <a asp-controller="SanPham" asp-action="Index" class="bb-btn bb-btn-outline bb-btn-sm">
+                Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+        <div class="row g-3">
+            @if (dtChuot != null)
+            {
+                int cnt = 0;
+                foreach (System.Data.DataRow row in dtChuot.Rows)
+                {
+                    if (cnt++ >= 4) break;
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="bb-product-card">
+                            <div class="bb-product-img">🖱️</div>
+                            <div class="bb-product-body">
+                                <div class="bb-product-brand">@row["TenHang"]</div>
+                                <div class="bb-product-name">@row["TenLoai"]</div>
+                                <div class="bb-product-price">@FormatGia(row["GiaBanGoc"])</div>
+                                <div class="bb-product-actions">
+                                    <a asp-controller="SanPham" asp-action="ChiTiet"
+                                       asp-route-maLoaiSP="@row["MaLoaiSP"]"
+                                       class="bb-btn bb-btn-outline bb-btn-sm flex-fill">Xem chi tiết</a>
+                                    <form asp-controller="GioHang" asp-action="Them" method="post" class="d-flex">
+                                        <input type="hidden" name="maLoaiSP" value="@row["MaLoaiSP"]" />
+                                        <button type="submit" class="bb-btn bb-btn-primary bb-btn-sm bb-btn-icon" title="Thêm vào giỏ">
+                                            <i class="fas fa-cart-plus"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            @if (dtBanPhim != null)
+            {
+                int cnt = 0;
+                foreach (System.Data.DataRow row in dtBanPhim.Rows)
+                {
+                    if (cnt++ >= 4) break;
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="bb-product-card">
+                            <div class="bb-product-img">⌨️</div>
+                            <div class="bb-product-body">
+                                <div class="bb-product-brand">@row["TenHang"]</div>
+                                <div class="bb-product-name">@row["TenLoai"]</div>
+                                <div class="bb-product-price">@FormatGia(row["GiaBanGoc"])</div>
+                                <div class="bb-product-actions">
+                                    <a asp-controller="SanPham" asp-action="ChiTiet"
+                                       asp-route-maLoaiSP="@row["MaLoaiSP"]"
+                                       class="bb-btn bb-btn-outline bb-btn-sm flex-fill">Xem chi tiết</a>
+                                    <form asp-controller="GioHang" asp-action="Them" method="post" class="d-flex">
+                                        <input type="hidden" name="maLoaiSP" value="@row["MaLoaiSP"]" />
+                                        <button type="submit" class="bb-btn bb-btn-primary bb-btn-sm bb-btn-icon" title="Thêm vào giỏ">
+                                            <i class="fas fa-cart-plus"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+}
+
+<!-- ── HÃNG SẢN XUẤT ─────────────────────────────────────────────────── -->
+@if (dtHSX != null && dtHSX.Rows.Count > 0)
+{
+    <div class="mb-4">
+        <div class="bb-section-header">
+            <h2 class="bb-section-title">🏭 Thương Hiệu</h2>
+        </div>
+        <div class="bb-card">
+            <div class="d-flex flex-wrap gap-3 justify-content-center">
+                @foreach (System.Data.DataRow hsx in dtHSX.Rows)
+                {
+                    <a asp-controller="SanPham" asp-action="Index"
+                       asp-route-maHang="@hsx["MaHang"]"
+                       class="bb-btn bb-btn-outline"
+                       style="font-size:14px; min-width:100px;">
+                        @hsx["TenHang"]
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<!-- ── ĐIỂM NỔI BẬT ──────────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="bb-card text-center py-4">
+            <div style="font-size:40px;margin-bottom:10px">✅</div>
+            <div style="font-weight:700;font-size:15px">Hàng Chính Hãng</div>
+            <div class="text-muted" style="font-size:12.5px">100% sản phẩm có nguồn gốc rõ ràng</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="bb-card text-center py-4">
+            <div style="font-size:40px;margin-bottom:10px">🛡️</div>
+            <div style="font-weight:700;font-size:15px">Bảo Hành Uy Tín</div>
+            <div class="text-muted" style="font-size:12.5px">Bảo hành theo chính sách hãng</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="bb-card text-center py-4">
+            <div style="font-size:40px;margin-bottom:10px">🔄</div>
+            <div style="font-weight:700;font-size:15px">Đổi Trả 30 Ngày</div>
+            <div class="text-muted" style="font-size:12.5px">Lỗi do nhà sản xuất được đổi ngay</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="bb-card text-center py-4">
+            <div style="font-size:40px;margin-bottom:10px">📞</div>
+            <div style="font-weight:700;font-size:15px">Tư Vấn 24/7</div>
+            <div class="text-muted" style="font-size:12.5px">Đội ngũ tư vấn chuyên nghiệp</div>
+        </div>
+    </div>
+</div>

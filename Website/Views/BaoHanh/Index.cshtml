@@ -1,0 +1,214 @@
+@{
+    ViewData["Title"] = "Tra Cứu Bảo Hành";
+    bool daTimKiem   = (bool)(ViewBag.DaTimKiem ?? false);
+    bool conBaoHanh  = (bool)(ViewBag.ConBaoHanh ?? false);
+    var ngayHetHan   = (DateTime)(ViewBag.NgayHetHan ?? DateTime.MinValue);
+    string maSerial  = ViewBag.MaSerial ?? "";
+    var dtBH = ViewBag.DsBaoHanh as System.Data.DataTable;
+    var dtDT = ViewBag.DsDoiTra  as System.Data.DataTable;
+}
+
+<!-- Hero tra cứu -->
+<div style="background:linear-gradient(135deg,#1A1A2E 0%,#16213E 60%,#0F3460 100%);
+            border-radius:20px;padding:48px 40px;margin-bottom:32px;text-align:center;color:white">
+    <div style="font-size:56px;margin-bottom:12px">🛡️</div>
+    <h1 style="font-size:32px;font-weight:900;margin-bottom:8px">Tra Cứu Bảo Hành</h1>
+    <p style="opacity:0.8;font-size:16px;margin-bottom:28px">
+        Nhập số serial để kiểm tra tình trạng bảo hành sản phẩm
+    </p>
+
+    <form asp-action="TraCuu" method="post" class="d-flex gap-3 justify-content-center flex-wrap">
+        @Html.AntiForgeryToken()
+        <input type="text" name="maSerial" value="@maSerial"
+               class="bb-input" style="max-width:380px;flex:1;min-width:200px"
+               placeholder="Nhập số serial (VD: SN20240001)"
+               required id="txtSerial" />
+        <button type="submit" class="bb-btn bb-btn-primary bb-btn-lg" style="white-space:nowrap">
+            <i class="fas fa-search me-2"></i> Tra Cứu
+        </button>
+    </form>
+</div>
+
+<!-- Kết quả tra cứu -->
+@if (daTimKiem)
+{
+    @if (ViewBag.LoiTimKiem != null)
+    {
+        <div class="bb-alert bb-alert-danger">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>@ViewBag.LoiTimKiem</span>
+        </div>
+    }
+    else if (ViewBag.SpTonTai == false)
+    {
+        <div class="bb-alert bb-alert-danger">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>Số serial <strong>@maSerial</strong> không tồn tại trong hệ thống. Vui lòng kiểm tra lại.</span>
+        </div>
+    }
+    else if (ViewBag.DaBan == false)
+    {
+        <div class="bb-alert bb-alert-warning" style="background-color: #FFF9C4; border-color: #FBC02D; color: #5D4037; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 20px; color: #FBC02D;"></i>
+            <div>
+                <strong>Thông báo:</strong> Sản phẩm chưa được bán, không có thời hạn bảo hành.
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Status card -->
+        <div class="bb-card mb-4 @(conBaoHanh ? "" : "")">
+            <div class="row align-items-center g-3">
+                <div class="col-md-auto text-center">
+                    <div style="font-size:60px">@(conBaoHanh ? "✅" : "⚠️")</div>
+                </div>
+                <div class="col-md">
+                    <div style="font-size:13px;color:#757575;margin-bottom:4px">
+                        Serial: <strong style="font-family:monospace">@maSerial</strong>
+                    </div>
+                    <div style="font-size:24px;font-weight:800;color:@(conBaoHanh ? "#2E7D32" : "#C62828")">
+                        @(conBaoHanh ? "Còn trong thời hạn bảo hành" : "Hết thời hạn bảo hành / Chưa có phiếu bảo hành")
+                    </div>
+                    @if (conBaoHanh && ngayHetHan != DateTime.MinValue)
+                    {
+                        <div style="font-size:15px;color:#424242;margin-top:8px">
+                            Ngày hết hạn bảo hành:
+                            <strong>@ngayHetHan.ToString("dd/MM/yyyy")</strong>
+                            <span class="bb-badge bb-badge-success ms-2">
+                                Còn @((ngayHetHan - DateTime.Today).Days) ngày
+                            </span>
+                        </div>
+                    }
+                </div>
+                @if (!conBaoHanh && ngayHetHan != DateTime.MinValue)
+                {
+                    <div class="col-md-auto">
+                        <span class="bb-badge bb-badge-danger" style="font-size:13px;padding:8px 14px">
+                            Hết hạn @ngayHetHan.ToString("dd/MM/yyyy")
+                        </span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Lịch sử bảo hành -->
+        @if (dtBH != null && dtBH.Rows.Count > 0)
+        {
+            <div class="bb-card mb-4">
+                <div class="bb-card-header">
+                    <i class="fas fa-history text-red"></i> Lịch Sử Bảo Hành
+                </div>
+                <table class="bb-table">
+                    <thead>
+                        <tr>
+                            <th>Mã phiếu</th>
+                            <th>Loại BH</th>
+                            <th>Ngày bắt đầu</th>
+                            <th>Ngày kết thúc</th>
+                            <th>Trạng thái</th>
+                            <th>Kết quả</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (System.Data.DataRow bh in dtBH.Rows)
+                        {
+                            <tr>
+                                <td><span style="font-family:monospace">@bh["MaPBH"]</span></td>
+                                <td>@bh["LoaiBH"]</td>
+                                <td>@Convert.ToDateTime(bh["NgayBatDau"]).ToString("dd/MM/yyyy")</td>
+                                <td>@Convert.ToDateTime(bh["NgayKetThuc"]).ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    @{
+                                        string tts = bh["TrangThai"]?.ToString() ?? "";
+                                        string cls = tts == "Hoàn Thành" ? "bb-badge-success" :
+                                                     tts == "Đang Xử Lý" ? "bb-badge-warning" : "bb-badge-danger";
+                                    }
+                                    <span class="bb-badge @cls">@tts</span>
+                                </td>
+                                <td style="font-size:13px;color:#616161">
+                                    @(bh["KetQua"] != DBNull.Value ? bh["KetQua"] : "—")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else if ((dtBH == null || dtBH.Rows.Count == 0) && !conBaoHanh)
+        {
+            <div class="bb-card text-center py-4 mb-4">
+                <div style="font-size:40px;margin-bottom:10px">📋</div>
+                <p class="text-muted">Không tìm thấy phiếu bảo hành nào cho serial này.</p>
+            </div>
+        }
+
+        <!-- Lịch sử đổi trả -->
+        @if (dtDT != null && dtDT.Rows.Count > 0)
+        {
+            <div class="bb-card">
+                <div class="bb-card-header">
+                    <i class="fas fa-exchange-alt text-red"></i> Lịch Sử Đổi Trả
+                </div>
+                <table class="bb-table">
+                    <thead>
+                        <tr>
+                            <th>Mã phiếu</th>
+                            <th>Ngày tạo</th>
+                            <th>Lý do</th>
+                            <th>Loại xử lý</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (System.Data.DataRow dt in dtDT.Rows)
+                        {
+                            <tr>
+                                <td><span style="font-family:monospace">@dt["MaPhieuDT"]</span></td>
+                                <td>@Convert.ToDateTime(dt["NgayTao"]).ToString("dd/MM/yyyy")</td>
+                                <td style="font-size:13px">@dt["LyDo"]</td>
+                                <td>@dt["LoaiXuLy"]</td>
+                                <td>
+                                    @{
+                                        string tdt = dt["TrangThai"]?.ToString() ?? "";
+                                        string cdT = tdt == "Hoàn Thành" ? "bb-badge-success" :
+                                                     tdt == "Đang Xử Lý" ? "bb-badge-warning" : "bb-badge-danger";
+                                    }
+                                    <span class="bb-badge @cdT">@tdt</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+}
+
+<!-- Thông tin chính sách -->
+@if (!daTimKiem)
+{
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="bb-card text-center py-4">
+                <div style="font-size:40px;margin-bottom:10px">🏪</div>
+                <div style="font-weight:700;font-size:15px;margin-bottom:6px">Khách Hàng Lẻ</div>
+                <div style="font-size:13px;color:#616161">Bảo hành tại cửa hàng theo thời hạn của loại sản phẩm</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="bb-card text-center py-4">
+                <div style="font-size:40px;margin-bottom:10px">🏭</div>
+                <div style="font-weight:700;font-size:15px;margin-bottom:6px">Khách Hàng Sỉ</div>
+                <div style="font-size:13px;color:#616161">Bảo hành tại hãng. ≥10 máy lỗi NSX trong 30 ngày → đổi 1:1</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="bb-card text-center py-4">
+                <div style="font-size:40px;margin-bottom:10px">🔄</div>
+                <div style="font-weight:700;font-size:15px;margin-bottom:6px">Đổi Trả</div>
+                <div style="font-size:13px;color:#616161">Đổi trả trong 30 ngày kể từ ngày mua, lỗi do nhà sản xuất</div>
+            </div>
+        </div>
+    </div>
+}

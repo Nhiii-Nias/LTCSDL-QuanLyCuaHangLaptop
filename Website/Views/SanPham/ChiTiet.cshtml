@@ -1,0 +1,184 @@
+@using DTO_HTQLCuaHangLaptop
+@{
+    var lsp = ViewBag.LoaiSanPham as DTO_LoaiSanPham;
+    var hsx = ViewBag.HangSanXuat as DTO_HangSanXuat;
+    var dtCH = ViewBag.CauHinh as System.Data.DataTable;
+    int tonKho = (int)(ViewBag.SoLuongTonKho ?? 0);
+
+    if (lsp == null) { return; }
+
+    ViewData["Title"] = lsp.TenLoai;
+    ViewData["MetaDescription"] = $"{lsp.TenLoai} - {hsx?.TenHang} - {lsp.GiaBanGoc:N0}đ";
+
+    string dmIcon = lsp.DanhMuc switch { "Laptop" => "💻", "Chuột" => "🖱️", "Bàn Phím" => "⌨️", _ => "📦" };
+    string stockClass = tonKho > 5 ? "in-stock" : tonKho > 0 ? "low-stock" : "out-stock";
+    string stockText  = tonKho > 5 ? $"Còn {tonKho} sản phẩm" : tonKho > 0 ? $"Sắp hết hàng (còn {tonKho})" : "Tạm hết hàng";
+}
+
+<!-- Breadcrumb -->
+<div class="bb-breadcrumb">
+    <a href="/">Trang chủ</a>
+    <span>/</span>
+    <a asp-controller="SanPham" asp-action="Index" asp-route-danhMuc="@lsp.DanhMuc">@lsp.DanhMuc</a>
+    <span>/</span>
+    <span class="active">@lsp.TenLoai</span>
+</div>
+
+<div class="row g-4">
+    <!-- ── ẢNH SẢN PHẨM ─────────────────────────────────────────────── -->
+    <div class="col-md-5">
+        <div class="bb-card p-0" style="overflow:hidden">
+            <div style="background:linear-gradient(135deg,#F5F5F5,#EEEEEE);
+                        aspect-ratio:1;display:flex;align-items:center;
+                        justify-content:center;font-size:120px;border-radius:12px">
+                @dmIcon
+            </div>
+        </div>
+
+        <!-- Thông tin nhanh -->
+        <div class="bb-card mt-3">
+            <div class="d-flex flex-column gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-shield-alt text-red"></i>
+                    <span style="font-size:14px">Bảo hành <strong>@lsp.ThoiGianBaoHanh tháng</strong></span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-sync-alt text-red"></i>
+                    <span style="font-size:14px">Đổi trả <strong>30 ngày</strong> lỗi do NSX</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-check-circle text-red"></i>
+                    <span style="font-size:14px">Hàng <strong>chính hãng</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── THÔNG TIN SẢN PHẨM ────────────────────────────────────────── -->
+    <div class="col-md-7">
+        <div class="bb-card">
+            <div class="bb-product-brand mb-2" style="font-size:13px">
+                @hsx?.TenHang &nbsp;·&nbsp; @lsp.DanhMuc
+            </div>
+            <h1 style="font-size:24px;font-weight:800;color:#1A1A2E;margin-bottom:12px;line-height:1.3">
+                @lsp.TenLoai
+            </h1>
+
+            <!-- Giá -->
+            <div style="margin-bottom:16px">
+                <span style="font-size:32px;font-weight:900;color:#C62828">
+                    @lsp.GiaBanGoc.ToString("N0") ₫
+                </span>
+            </div>
+
+            <!-- Tình trạng hàng -->
+            <div class="mb-4">
+                <span class="bb-product-stock @stockClass" style="font-size:14px">
+                    @if (tonKho > 0) { <span>✅</span> } else { <span>❌</span> }
+                    @stockText
+                </span>
+            </div>
+
+            <!-- Nút hành động -->
+            @if (tonKho > 0)
+            {
+                <div class="d-flex gap-3 flex-wrap mb-4">
+                    <form asp-controller="GioHang" asp-action="Them" method="post" class="d-flex flex-fill">
+                        <input type="hidden" name="maLoaiSP" value="@lsp.MaLoaiSP" />
+                        <button type="submit" class="bb-btn bb-btn-primary bb-btn-lg flex-fill" id="addToCartBtn">
+                            <i class="fas fa-shopping-cart me-2"></i> Thêm Vào Giỏ Hàng
+                        </button>
+                    </form>
+                    <a asp-controller="GioHang" asp-action="DatHang"
+                       class="bb-btn bb-btn-outline bb-btn-lg flex-fill"
+                       onclick="addAndBuy('@lsp.MaLoaiSP', event)">
+                        <i class="fas fa-bolt me-2"></i> Mua Ngay
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="bb-alert bb-alert-warning mb-4">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Sản phẩm hiện đang hết hàng. Vui lòng quay lại sau.
+                </div>
+            }
+
+            <!-- Thông số bảo hành -->
+            <div class="d-flex gap-3 flex-wrap">
+                <span class="bb-badge bb-badge-success">
+                    <i class="fas fa-shield-alt"></i> BH @lsp.ThoiGianBaoHanh tháng
+                </span>
+                <span class="bb-badge bb-badge-info">
+                    <i class="fas fa-tag"></i> @lsp.DanhMuc
+                </span>
+                <span class="bb-badge bb-badge-gray">
+                    <i class="fas fa-barcode"></i> @lsp.MaLoaiSP
+                </span>
+            </div>
+        </div>
+
+        <!-- ── CẤU HÌNH KỸ THUẬT ─────────────────────────────────────── -->
+        @if (dtCH != null && dtCH.Rows.Count > 0)
+        {
+            <div class="bb-card mt-3">
+                <div class="bb-card-header">
+                    <i class="fas fa-microchip text-red"></i> Cấu Hình Kỹ Thuật
+                </div>
+                <table class="bb-spec-table">
+                    @foreach (System.Data.DataRow ch in dtCH.Rows)
+                    {
+                        string attrStr = ch["TenThuocTinh"]?.ToString() ?? "";
+                        int colonIndex = attrStr.IndexOf(':');
+                        string ten = colonIndex >= 0 ? attrStr.Substring(0, colonIndex).Trim() : attrStr;
+                        string giatri = colonIndex >= 0 ? attrStr.Substring(colonIndex + 1).Trim() : "";
+                        <tr>
+                            <td>@ten</td>
+                            <td>@giatri</td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="bb-card mt-3">
+                <div class="bb-card-header">
+                    <i class="fas fa-microchip text-red"></i> Cấu Hình Kỹ Thuật
+                </div>
+                <p class="text-muted" style="font-size:14px;margin:0">
+                    Thông tin cấu hình đang được cập nhật.
+                </p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- ── GỢI Ý ─────────────────────────────────────────────────────────── -->
+<div class="mt-4">
+    <a asp-controller="SanPham" asp-action="Index" asp-route-danhMuc="@lsp.DanhMuc"
+       class="bb-btn bb-btn-outline">
+        <i class="fas fa-arrow-left me-2"></i> Xem thêm @lsp.DanhMuc
+    </a>
+</div>
+
+@section Scripts {
+<script>
+function addAndBuy(maLoaiSP, e) {
+    e.preventDefault();
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/GioHang/Them';
+    const input = document.createElement('input');
+    input.name = 'maLoaiSP';
+    input.value = maLoaiSP;
+    const redir = document.createElement('input');
+    redir.name = 'redirectToDatHang';
+    redir.value = 'true';
+    form.appendChild(input);
+    form.appendChild(redir);
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
+}

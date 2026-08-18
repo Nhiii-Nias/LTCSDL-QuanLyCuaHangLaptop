@@ -1,0 +1,109 @@
+@{
+    ViewData["Title"] = "Khiếu Nại Của Tôi";
+    var dtKN = ViewBag.DsKhieuNai as System.Data.DataTable;
+}
+
+<div class="bb-breadcrumb">
+    <a href="/">Trang chủ</a><span>/</span><span class="active">Khiếu nại của tôi</span>
+</div>
+
+<h1 class="bb-section-title mb-4">💬 Khiếu Nại Của Tôi</h1>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
+        <i class="fas fa-check-circle me-2"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="bb-card shadow-sm">
+            <div class="bb-card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-comments text-red me-2"></i> Đơn Khiếu Nại Dịch Vụ & Sản Phẩm</span>
+                <a asp-action="YeuCau" class="bb-btn bb-btn-primary btn-sm py-1 px-3">
+                    <i class="fas fa-plus-circle me-1"></i> Tạo khiếu nại mới
+                </a>
+            </div>
+            
+            <div class="p-3">
+                @if (dtKN == null || dtKN.Rows.Count == 0)
+                {
+                    <div class="text-center py-5">
+                        <div class="text-muted fs-1 mb-3"><i class="fas fa-comment-slash"></i></div>
+                        <p class="text-muted">Bạn chưa gửi đơn khiếu nại nào.</p>
+                        <a asp-action="YeuCau" class="bb-btn bb-btn-outline mt-2">Gửi khiếu nại đầu tiên</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="bb-table table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Mã khiếu nại</th>
+                                    <th>Mã đơn hàng</th>
+                                    <th>Nội dung khiếu nại</th>
+                                    <th>Ngày gửi</th>
+                                    <th>Trạng thái</th>
+                                    <th>Kết quả xử lý</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (System.Data.DataRow r in dtKN.Rows)
+                                {
+                                    string tt = r["TrangThai"]?.ToString() ?? "";
+                                    string cls = tt == "Đã Giải Quyết" ? "bb-badge-success" :
+                                                 tt == "Đang Xử Lý" ? "bb-badge-warning" : "bb-badge-danger";
+                                    
+                                    string noiDungFull = r["NoiDung"]?.ToString() ?? "";
+                                    string noiDungHienThi = noiDungFull;
+                                    
+                                    // Bóc tách hiển thị đẹp nếu bắt đầu bằng [Sản phẩm Serial: ...]
+                                    if (noiDungFull.StartsWith("[Sản phẩm Serial:"))
+                                    {
+                                        int idx = noiDungFull.IndexOf("] - ");
+                                        if (idx > 0)
+                                        {
+                                            string prefix = noiDungFull.Substring(0, idx + 1);
+                                            string body = noiDungFull.Substring(idx + 4);
+                                            noiDungHienThi = body;
+                                        }
+                                    }
+                                    
+                                    <tr>
+                                        <td style="font-size:13px; font-family:monospace; font-weight:bold; color:var(--text-color);">@r["MaDonKN"]</td>
+                                        <td style="font-size:13px; font-family:monospace;">@r["MaDH"]</td>
+                                        <td style="font-size:13px; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="@noiDungFull">
+                                            @if (noiDungFull.StartsWith("[Sản phẩm Serial:"))
+                                            {
+                                                int idx = noiDungFull.IndexOf("] - ");
+                                                string serialStr = noiDungFull.Substring(0, idx + 1);
+                                                <span class="badge bg-secondary me-1" style="font-size:10px; font-family: monospace;">@serialStr</span>
+                                            }
+                                            @noiDungHienThi
+                                        </td>
+                                        <td style="font-size:13px">@Convert.ToDateTime(r["NgayGui"]).ToString("dd/MM/yyyy")</td>
+                                        <td><span class="bb-badge @cls px-2 py-1" style="font-size:11px">@tt</span></td>
+                                        <td style="font-size:13px; color:#555; max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="@r["KetQua"]">
+                                            @(r["KetQua"] == DBNull.Value || string.IsNullOrEmpty(r["KetQua"]?.ToString()) ? "Chưa có phản hồi" : r["KetQua"])
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

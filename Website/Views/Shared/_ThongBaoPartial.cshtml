@@ -1,0 +1,43 @@
+@* Partial: Flash message — đọc TempData["Success"], TempData["Error"], TempData["Warning"]
+   Dùng trong View bất kỳ: @await Html.PartialAsync("_ThongBaoPartial")
+   Ghi chú: Layout đã xử lý flash toàn cục — partial này dùng thêm cho các view cụ thể
+             cần hiển thị thông báo ở vị trí khác (ví dụ: trong form).
+*@
+@{
+    var success = TempData.Peek("Success") as string;
+    var error   = TempData.Peek("Error")   as string;
+    var warning = TempData.Peek("Warning") as string;
+}
+
+@if (!string.IsNullOrEmpty(success))
+{
+    <div class="bb-alert bb-alert-success" role="alert" aria-live="polite">
+        <i class="fas fa-check-circle flex-shrink-0"></i>
+        <span>@success</span>
+        <button type="button" class="btn-close btn-close-sm ms-auto"
+                onclick="this.closest('.bb-alert').remove()"
+                aria-label="Đóng"></button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="bb-alert bb-alert-danger" role="alert" aria-live="assertive">
+        <i class="fas fa-exclamation-circle flex-shrink-0"></i>
+        <span>@error</span>
+        <button type="button" class="btn-close btn-close-sm ms-auto"
+                onclick="this.closest('.bb-alert').remove()"
+                aria-label="Đóng"></button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(warning))
+{
+    <div class="bb-alert bb-alert-warning" role="alert" aria-live="polite">
+        <i class="fas fa-exclamation-triangle flex-shrink-0"></i>
+        <span>@warning</span>
+        <button type="button" class="btn-close btn-close-sm ms-auto"
+                onclick="this.closest('.bb-alert').remove()"
+                aria-label="Đóng"></button>
+    </div>
+}

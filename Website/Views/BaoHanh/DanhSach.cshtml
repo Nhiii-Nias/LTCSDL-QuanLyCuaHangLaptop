@@ -1,0 +1,94 @@
+@{
+    ViewData["Title"] = "Bảo Hành Của Tôi";
+    var dtBH = ViewBag.DsBaoHanh as System.Data.DataTable;
+    var dtDT = ViewBag.DsDoiTra  as System.Data.DataTable;
+}
+
+<div class="bb-breadcrumb">
+    <a href="/">Trang chủ</a><span>/</span><span class="active">Bảo hành của tôi</span>
+</div>
+
+<h1 class="bb-section-title mb-4">🛡️ Bảo Hành Của Tôi</h1>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="bb-card">
+            <div class="bb-card-header">
+                <i class="fas fa-shield-alt text-red"></i> Phiếu Bảo Hành
+            </div>
+            @if (dtBH == null || dtBH.Rows.Count == 0)
+            {
+                <p class="text-muted text-center py-3">Chưa có phiếu bảo hành nào.</p>
+            }
+            else
+            {
+                <table class="bb-table">
+                    <thead>
+                        <tr>
+                            <th>Mã phiếu</th><th>Serial</th><th>Hết hạn</th><th>TT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (System.Data.DataRow r in dtBH.Rows)
+                        {
+                            string tt = r["TrangThai"]?.ToString() ?? "";
+                            string cls = tt == "Hoàn Thành" ? "bb-badge-success" :
+                                         tt == "Đang Xử Lý" ? "bb-badge-warning" : "bb-badge-danger";
+                            <tr>
+                                <td style="font-size:12px;font-family:monospace">@r["MaPBH"]</td>
+                                <td style="font-size:12px;font-family:monospace">@r["MaSerialSP"]</td>
+                                <td style="font-size:12px">@Convert.ToDateTime(r["NgayKetThuc"]).ToString("dd/MM/yyyy")</td>
+                                <td><span class="bb-badge @cls" style="font-size:11px">@tt</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="bb-card">
+            <div class="bb-card-header">
+                <i class="fas fa-exchange-alt text-red"></i> Phiếu Đổi Trả
+            </div>
+            @if (dtDT == null || dtDT.Rows.Count == 0)
+            {
+                <p class="text-muted text-center py-3">Chưa có phiếu đổi trả nào.</p>
+            }
+            else
+            {
+                <table class="bb-table">
+                    <thead>
+                        <tr>
+                            <th>Mã phiếu</th><th>Serial</th><th>Ngày</th><th>TT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (System.Data.DataRow r in dtDT.Rows)
+                        {
+                            string tt = r["TrangThai"]?.ToString() ?? "";
+                            string cls = tt == "Hoàn Thành" ? "bb-badge-success" :
+                                         tt == "Đang Xử Lý" ? "bb-badge-warning" : "bb-badge-danger";
+                            <tr>
+                                <td style="font-size:12px;font-family:monospace">@r["MaPhieuDT"]</td>
+                                <td style="font-size:12px;font-family:monospace">@r["MaSerialSP"]</td>
+                                <td style="font-size:12px">@Convert.ToDateTime(r["NgayTao"]).ToString("dd/MM/yyyy")</td>
+                                <td><span class="bb-badge @cls" style="font-size:11px">@tt</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="mt-4 d-flex gap-2">
+    <a asp-action="Index" class="bb-btn bb-btn-outline">
+        <i class="fas fa-search me-2"></i> Tra cứu theo serial
+    </a>
+    <a asp-action="YeuCau" class="bb-btn bb-btn-primary">
+        <i class="fas fa-plus-circle me-2"></i> Yêu cầu bảo hành mới
+    </a>
+</div>

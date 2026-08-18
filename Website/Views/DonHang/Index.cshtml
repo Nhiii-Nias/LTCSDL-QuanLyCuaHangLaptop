@@ -1,0 +1,99 @@
+@{
+    ViewData["Title"] = "Đơn Hàng Của Tôi";
+    var dt = ViewBag.DanhSachDonHang as System.Data.DataTable;
+
+    string BadgeClass(string tt) => tt switch {
+        "Hoàn Thành"  => "bb-badge-success",
+        "Đang Giao"   => "bb-badge-info",
+        "Chờ Xử Lý"  => "bb-badge-warning",
+        "Huỷ"         => "bb-badge-danger",
+        _             => "bb-badge-gray"
+    };
+    string BadgeIcon(string tt) => tt switch {
+        "Hoàn Thành" => "✅", "Đang Giao" => "🚚",
+        "Chờ Xử Lý" => "⏳", "Huỷ" => "❌", _ => "📋"
+    };
+}
+
+<div class="bb-breadcrumb">
+    <a href="/">Trang chủ</a><span>/</span><span class="active">Đơn hàng của tôi</span>
+</div>
+
+<h1 class="bb-section-title mb-4">📦 Đơn Hàng Của Tôi</h1>
+
+@if (dt == null || dt.Rows.Count == 0)
+{
+    <div class="text-center py-5">
+        <div style="font-size:72px;margin-bottom:16px">📭</div>
+        <h2 style="font-size:20px;font-weight:700;color:#424242">Bạn chưa có đơn hàng nào</h2>
+        <a asp-controller="SanPham" asp-action="Index" class="bb-btn bb-btn-primary mt-3">
+            <i class="fas fa-shopping-bag me-2"></i> Mua sắm ngay
+        </a>
+    </div>
+}
+else
+{
+    <div class="bb-card p-0" style="overflow:hidden">
+        <table class="bb-table">
+            <thead>
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Ngày đặt</th>
+                    <th>Tổng tiền</th>
+                    <th>Thanh toán</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (System.Data.DataRow row in dt.Rows)
+                {
+                    string tt = row["TrangThai"]?.ToString() ?? "";
+                    decimal tongTien = row["TongTien"] != DBNull.Value ? Convert.ToDecimal(row["TongTien"]) : 0;
+                    decimal? tienSauGiam = row["TienSauGiam"] != DBNull.Value ? Convert.ToDecimal(row["TienSauGiam"]) : (decimal?)null;
+
+                    <tr>
+                        <td><strong style="font-family:monospace">@row["MaDH"]</strong></td>
+                        <td>@Convert.ToDateTime(row["NgayDat"]).ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            @if (tienSauGiam.HasValue && tienSauGiam < tongTien)
+                            {
+                                <span style="text-decoration:line-through;color:#9E9E9E;font-size:12px">@tongTien.ToString("N0") ₫</span><br />
+                                <strong class="text-red">@tienSauGiam.Value.ToString("N0") ₫</strong>
+                            }
+                            else
+                            {
+                                <strong>@tongTien.ToString("N0") ₫</strong>
+                            }
+                        </td>
+                        <td><span style="font-size:13px">@row["PhuongThucThanhToan"]</span></td>
+                        <td>
+                            <span class="bb-badge @BadgeClass(tt)">
+                                @BadgeIcon(tt) @tt
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <a asp-action="ChiTiet" asp-route-maDH="@row["MaDH"]"
+                                   class="bb-btn bb-btn-outline bb-btn-sm">
+                                    Chi tiết
+                                </a>
+                                @if (tt == "Chờ Xử Lý")
+                                {
+                                    <form asp-action="Huy" method="post" asp-route-maDH="@row["MaDH"]">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="bb-btn bb-btn-sm"
+                                                style="background:#FFEBEE;color:#C62828;border:1px solid #C62828"
+                                                onclick="return confirm('Xác nhận hủy đơn hàng @row["MaDH"]?')">
+                                            Hủy
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

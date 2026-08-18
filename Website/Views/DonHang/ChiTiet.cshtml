@@ -1,0 +1,126 @@
+@using DTO_HTQLCuaHangLaptop
+@{
+    var dh  = ViewBag.DonHang as DTO_DonHang;
+    var dtCT = ViewBag.ChiTiet as System.Data.DataTable;
+    if (dh == null) { <p>Không tìm thấy đơn hàng.</p> return; }
+
+    ViewData["Title"] = $"Đơn Hàng {dh.MaDH}";
+
+    string BadgeClass(string tt) => tt switch {
+        "Hoàn Thành" => "bb-badge-success", "Đang Giao" => "bb-badge-info",
+        "Chờ Xử Lý" => "bb-badge-warning", "Huỷ" => "bb-badge-danger", _ => "bb-badge-gray"
+    };
+}
+
+<div class="bb-breadcrumb">
+    <a href="/">Trang chủ</a><span>/</span>
+    <a asp-action="Index">Đơn hàng</a><span>/</span>
+    <span class="active">@dh.MaDH</span>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-8">
+        <!-- Thông tin đơn hàng -->
+        <div class="bb-card mb-4">
+            <div class="bb-card-header">
+                <i class="fas fa-box text-red"></i> Thông Tin Đơn Hàng
+            </div>
+            <div class="row g-3">
+                <div class="col-6">
+                    <div class="bb-label">Mã đơn hàng</div>
+                    <strong style="font-family:monospace;font-size:16px">@dh.MaDH</strong>
+                </div>
+                <div class="col-6">
+                    <div class="bb-label">Trạng thái</div>
+                    <span class="bb-badge @BadgeClass(dh.TrangThai)" style="font-size:13px">@dh.TrangThai</span>
+                </div>
+                <div class="col-6">
+                    <div class="bb-label">Ngày đặt</div>
+                    <span>@dh.NgayDat.ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+                <div class="col-6">
+                    <div class="bb-label">Phương thức thanh toán</div>
+                    <span>@dh.PhuongThucThanhToan</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chi tiết sản phẩm -->
+        <div class="bb-card">
+            <div class="bb-card-header">
+                <i class="fas fa-list text-red"></i> Sản Phẩm Trong Đơn
+            </div>
+            @if (dtCT != null && dtCT.Rows.Count > 0)
+            {
+                <table class="bb-table">
+                    <thead>
+                        <tr>
+                            <th>Serial</th>
+                            <th>Tên sản phẩm</th>
+                            <th>Danh mục</th>
+                            <th>Đơn giá</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (System.Data.DataRow ct in dtCT.Rows)
+                        {
+                            <tr>
+                                <td><span style="font-family:monospace;font-size:12px">@ct["MaSerialSP"]</span></td>
+                                <td>@ct["TenLoai"]</td>
+                                <td>@ct["DanhMuc"]</td>
+                                <td><strong>@Convert.ToDecimal(ct["GiaBan"]).ToString("N0") ₫</strong></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p class="text-muted">Không có chi tiết sản phẩm.</p>
+            }
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="bb-order-summary">
+            <div class="bb-card-header">
+                <i class="fas fa-receipt text-red"></i> Tóm Tắt Thanh Toán
+            </div>
+            <div class="bb-summary-row">
+                <span>Tổng tiền hàng</span>
+                <span>@dh.TongTien.ToString("N0") ₫</span>
+            </div>
+            @if (dh.TienSauGiam.HasValue && dh.TienSauGiam < dh.TongTien)
+            {
+                <div class="bb-summary-row">
+                    <span>Giảm giá</span>
+                    <span class="text-red">-@((dh.TongTien - dh.TienSauGiam.Value).ToString("N0")) ₫</span>
+                </div>
+            }
+            <div class="bb-summary-row">
+                <span>Phí giao hàng</span>
+                <span class="bb-badge bb-badge-success">Miễn phí</span>
+            </div>
+            <div class="bb-summary-total">
+                <span>Tổng thanh toán</span>
+                <span>@((dh.TienSauGiam ?? dh.TongTien).ToString("N0")) ₫</span>
+            </div>
+
+            @if (dh.TrangThai == "Chờ Xử Lý")
+            {
+                <form asp-action="Huy" asp-route-maDH="@dh.MaDH" method="post" class="mt-4">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="bb-btn bb-btn-block"
+                            style="background:#FFEBEE;color:#C62828;border:1.5px solid #C62828;padding:10px"
+                            onclick="return confirm('Xác nhận hủy đơn hàng này?')">
+                        <i class="fas fa-times-circle me-2"></i> Hủy Đơn Hàng
+                    </button>
+                </form>
+            }
+
+            <a asp-action="Index" class="bb-btn bb-btn-outline bb-btn-block mt-2">
+                <i class="fas fa-arrow-left me-2"></i> Quay lại danh sách
+            </a>
+        </div>
+    </div>
+</div>

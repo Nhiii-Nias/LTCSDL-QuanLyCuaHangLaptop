@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="@(ViewData["MetaDescription"] ?? "Cửa hàng laptop BulaBula — Laptop chính hãng, giá tốt, bảo hành uy tín.")" />
+    <title>@(ViewData["Title"] != null ? ViewData["Title"] + " — " : "")Cửa Hàng Laptop BulaBula</title>
+
+    <!-- Bootstrap 5 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     HEADER
+═══════════════════════════════════════════════════════════════════ -->
+<header>
+    <!-- Tầng 1: Logo + Search + Actions -->
+    <div class="bb-header-top">
+        <div class="bb-header-inner">
+
+            <!-- Logo -->
+            <a href="/" class="bb-logo" title="Trang chủ BulaBula">
+                <div class="bb-logo-icon">BB</div>
+                <div class="bb-logo-text">
+                    <span class="bb-logo-name">BulaBula</span>
+                    <span class="bb-logo-tagline">Cửa hàng Laptop</span>
+                </div>
+            </a>
+
+            <!-- Thanh tìm kiếm -->
+            <form class="bb-search-form" action="/SanPham/Index" method="get" id="searchForm">
+                <input type="text" name="q" class="bb-search-input"
+                       placeholder="Tìm kiếm laptop, chuột, bàn phím..."
+                       value="@ViewData["SearchQuery"]"
+                       autocomplete="off"
+                       id="searchInput" />
+                <button type="submit" class="bb-search-btn" title="Tìm kiếm">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+
+            <!-- Actions bên phải -->
+            <div class="bb-header-actions">
+
+                @{
+                    var khachHang = Context.Session.GetString("TenKH");
+                    var soLuongGio = Context.Session.GetString("SoLuongGio") ?? "0";
+                    var tongTienGio = Context.Session.GetString("TongTienGio") ?? "0";
+                    int soLuong = int.TryParse(soLuongGio, out int sl) ? sl : 0;
+                    decimal tongTien = decimal.TryParse(tongTienGio, out decimal tt) ? tt : 0;
+                }
+
+                <!-- Tra cứu đơn hàng -->
+                <a asp-controller="DonHang" asp-action="Index" class="bb-action-btn" title="Đơn hàng của tôi">
+                    <i class="fas fa-box icon"></i>
+                    <span class="label">Đơn hàng</span>
+                </a>
+
+                <!-- Giỏ hàng -->
+                <a asp-controller="GioHang" asp-action="Index" class="bb-action-btn bb-cart-wrapper" title="Giỏ hàng">
+                    <i class="fas fa-shopping-cart icon"></i>
+                    @if (soLuong > 0)
+                    {
+                        <span class="bb-cart-badge" id="cartBadge">@soLuong</span>
+                    }
+                    else
+                    {
+                        <span class="bb-cart-badge" id="cartBadge" style="display:none">0</span>
+                    }
+                    <span class="label">Giỏ hàng</span>
+                    @if (tongTien > 0)
+                    {
+                        <span class="bb-cart-price" id="cartPrice">@tongTien.ToString("N0")đ</span>
+                    }
+                    else
+                    {
+                        <span class="bb-cart-price" id="cartPrice" style="display:none">0đ</span>
+                    }
+                </a>
+
+                <!-- Đăng nhập / Tài khoản -->
+                @if (!string.IsNullOrEmpty(khachHang))
+                {
+                    <div class="dropdown">
+                        <button class="bb-action-btn dropdown-toggle" data-bs-toggle="dropdown"
+                                aria-expanded="false" id="userMenuBtn">
+                            <i class="fas fa-user-circle icon"></i>
+                            <span class="label text-truncate" style="max-width:80px">@khachHang</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow">
+                            <li><h6 class="dropdown-header text-muted small">Xin chào, @khachHang!</h6></li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="TaiKhoan" asp-action="ThongTin">
+                                    <i class="fas fa-user me-2 text-secondary"></i>Thông tin tài khoản
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="DonHang" asp-action="Index">
+                                    <i class="fas fa-box me-2 text-secondary"></i>Đơn hàng của tôi
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="BaoHanh" asp-action="DanhSach">
+                                    <i class="fas fa-shield-alt me-2 text-secondary"></i>Bảo hành của tôi
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="BaoHanh" asp-action="YeuCau">
+                                    <i class="fas fa-plus-circle me-2 text-secondary"></i>Yêu cầu bảo hành
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="DoiTra" asp-action="DanhSach">
+                                    <i class="fas fa-exchange-alt me-2 text-secondary"></i>Đổi trả của tôi
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="KhieuNai" asp-action="DanhSach">
+                                    <i class="fas fa-comments me-2 text-secondary"></i>Khiếu nại của tôi
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form asp-controller="TaiKhoan" asp-action="DangXuat" method="post">
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                }
+                else
+                {
+                    <a asp-controller="TaiKhoan" asp-action="DangNhap" class="bb-action-btn" id="loginBtn">
+                        <i class="fas fa-sign-in-alt icon"></i>
+                        <span class="label">Đăng nhập</span>
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Tầng 2: Điều hướng danh mục -->
+    <nav class="bb-navbar">
+        <div class="bb-navbar-inner">
+            <a href="/" class="bb-nav-link @(Context.Request.Path == "/" ? "active" : "")">
+                <i class="fas fa-home nav-icon"></i> Trang Chủ
+            </a>
+            <a asp-controller="SanPham" asp-action="Index" asp-route-danhMuc="Laptop"
+               class="bb-nav-link @(Context.Request.Path.Value?.Contains("SanPham") == true && Context.Request.Query["danhMuc"] == "Laptop" ? "active" : "")">
+                <i class="fas fa-laptop nav-icon"></i> Laptop
+            </a>
+            <a asp-controller="SanPham" asp-action="Index" asp-route-danhMuc="Chuột"
+               class="bb-nav-link @(Context.Request.Query["danhMuc"] == "Chuột" ? "active" : "")">
+                <i class="fas fa-mouse nav-icon"></i> Chuột
+            </a>
+            <a asp-controller="SanPham" asp-action="Index" asp-route-danhMuc="Bàn Phím"
+               class="bb-nav-link @(Context.Request.Query["danhMuc"] == "Bàn Phím" ? "active" : "")">
+                <i class="fas fa-keyboard nav-icon"></i> Bàn Phím
+            </a>
+            <a asp-controller="SanPham" asp-action="Index"
+               class="bb-nav-link @(Context.Request.Path.Value?.StartsWith("/SanPham") == true && string.IsNullOrEmpty(Context.Request.Query["danhMuc"]) ? "active" : "")">
+                <i class="fas fa-th-large nav-icon"></i> Tất Cả Sản Phẩm
+            </a>
+        </div>
+    </nav>
+
+    <!-- Tầng 3: Sub-navigation tiện ích -->
+    <div class="bb-subnav">
+        <div class="bb-subnav-inner">
+            <a asp-controller="BaoHanh" asp-action="Index">
+                <i class="fas fa-shield-alt"></i> Tra cứu bảo hành
+            </a>
+            <a asp-controller="DonHang" asp-action="Index">
+                <i class="fas fa-search"></i> Tra cứu đơn hàng
+            </a>
+            <a asp-controller="GioHang" asp-action="Index">
+                <i class="fas fa-shopping-cart"></i> Giỏ hàng
+            </a>
+            <a href="#" data-bs-toggle="modal" data-bs-target="#lienHeModal">
+                <i class="fas fa-phone"></i> Liên hệ: 1800 xxxx
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     FLASH MESSAGES
+═══════════════════════════════════════════════════════════════════ -->
+@if (TempData["Success"] != null)
+{
+    <div class="bb-alert bb-alert-success mx-auto mt-3" style="max-width:1280px;padding-left:20px;padding-right:20px">
+        <i class="fas fa-check-circle"></i>
+        <span>@TempData["Success"]</span>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="bb-alert bb-alert-danger mx-auto mt-3" style="max-width:1280px;padding-left:20px;padding-right:20px">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>@TempData["Error"]</span>
+    </div>
+}
+@if (TempData["Warning"] != null)
+{
+    <div class="bb-alert bb-alert-warning mx-auto mt-3" style="max-width:1280px;padding-left:20px;padding-right:20px">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>@TempData["Warning"]</span>
+    </div>
+}
+
+<!-- ══════════════════════════════════════════════════════════════════
+     MAIN CONTENT
+═══════════════════════════════════════════════════════════════════ -->
+<main class="bb-main">
+    @RenderBody()
+</main>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════════════════════════════ -->
+<footer class="bb-footer">
+    <div class="bb-footer-inner">
+        <div class="bb-footer-grid">
+            <!-- Cột 1: Thông tin cửa hàng -->
+            <div>
+                <div class="bb-footer-brand-name">🖥️ Cửa Hàng Laptop BulaBula</div>
+                <p class="bb-footer-desc">
+                    Chuyên cung cấp laptop, chuột và bàn phím chính hãng với mức giá
+                    cạnh tranh nhất thị trường. Bảo hành uy tín, dịch vụ tận tâm.
+                </p>
+                <div class="bb-footer-contact">
+                    <p><i class="fas fa-map-marker-alt text-red"></i> 123 Đường ABC, Quận 1, TP. HCM</p>
+                    <p><i class="fas fa-phone text-red"></i> 1800 xxxx (Miễn phí)</p>
+                    <p><i class="fas fa-envelope text-red"></i> hotro&#64;bulabula.vn</p>
+                    <p><i class="fas fa-clock text-red"></i> 8:00 – 22:00 (Tất cả các ngày)</p>
+                </div>
+            </div>
+
+            <!-- Cột 2: Sản phẩm -->
+            <div>
+                <h5>Sản Phẩm</h5>
+                <ul>
+                    <li><a asp-controller="SanPham" asp-action="Index" asp-route-danhMuc="Laptop"><i class="fas fa-chevron-right"></i> Laptop</a></li>
+                    <li><a asp-controller="SanPham" asp-action="Index" asp-route-danhMuc="Chuột"><i class="fas fa-chevron-right"></i> Chuột</a></li>
+                    <li><a asp-controller="SanPham" asp-action="Index" asp-route-danhMuc="Bàn Phím"><i class="fas fa-chevron-right"></i> Bàn Phím</a></li>
+                    <li><a asp-controller="SanPham" asp-action="Index"><i class="fas fa-chevron-right"></i> Tất cả sản phẩm</a></li>
+                </ul>
+            </div>
+
+            <!-- Cột 3: Hỗ trợ -->
+            <div>
+                <h5>Hỗ Trợ</h5>
+                <ul>
+                    <li><a asp-controller="TaiKhoan" asp-action="DangNhap"><i class="fas fa-chevron-right"></i> Đăng nhập</a></li>
+                    <li><a asp-controller="TaiKhoan" asp-action="DangKy"><i class="fas fa-chevron-right"></i> Đăng ký</a></li>
+                    <li><a asp-controller="GioHang" asp-action="Index"><i class="fas fa-chevron-right"></i> Giỏ hàng</a></li>
+                    <li><a asp-controller="DonHang" asp-action="Index"><i class="fas fa-chevron-right"></i> Đơn hàng</a></li>
+                    <li><a asp-controller="BaoHanh" asp-action="Index"><i class="fas fa-chevron-right"></i> Tra cứu bảo hành</a></li>
+                </ul>
+            </div>
+
+            <!-- Cột 4: Chính sách -->
+            <div>
+                <h5>Chính Sách</h5>
+                <ul>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Chính sách bảo hành</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Chính sách đổi trả</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Chính sách giao hàng</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Bảo mật thông tin</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="bb-footer-bottom">
+            <span>© 2026 Cửa Hàng Laptop BulaBula. Hệ thống quản lý phân phối máy tính.</span>
+            <span>Đề tài LTCSDL — DH23IM01</span>
+        </div>
+    </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Cart Updater -->
+<script>
+    // Cập nhật badge giỏ hàng qua AJAX
+    function capNhatGioHang(soLuong, tongTien) {
+        const badge = document.getElementById('cartBadge');
+        const price = document.getElementById('cartPrice');
+        if (badge) {
+            badge.textContent = soLuong;
+            badge.style.display = soLuong > 0 ? 'flex' : 'none';
+            badge.classList.add('badge-pop');
+            setTimeout(() => badge.classList.remove('badge-pop'), 300);
+        }
+        if (price) {
+            price.textContent = parseInt(tongTien).toLocaleString('vi-VN') + 'đ';
+            price.style.display = tongTien > 0 ? 'block' : 'none';
+        }
+    }
+
+    // Auto-dismiss alerts sau 5s
+    document.querySelectorAll('.bb-alert').forEach(el => {
+        setTimeout(() => {
+            el.style.transition = 'opacity 0.5s';
+            el.style.opacity = '0';
+            setTimeout(() => el.remove(), 500);
+        }, 5000);
+    });
+</script>
+
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

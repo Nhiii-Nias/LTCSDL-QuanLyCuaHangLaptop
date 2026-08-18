@@ -1,0 +1,73 @@
+@model dynamic
+@{
+    ViewData["Title"] = "Gửi Khiếu Nại Mới";
+    var serials = ViewBag.Serials as List<KeyValuePair<string, string>>;
+}
+
+<div class="bb-breadcrumb">
+    <a href="/">Trang chủ</a>
+    <span>/</span>
+    <a asp-action="DanhSach">Khiếu nại của tôi</a>
+    <span>/</span>
+    <span class="active">Gửi khiếu nại mới</span>
+</div>
+
+<h1 class="bb-section-title mb-4">💬 Gửi Đơn Khiếu Nại</h1>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="bb-card shadow-sm">
+            <div class="bb-card-header">
+                <i class="fas fa-edit text-red"></i> Đăng Ký Yêu Cầu Khiếu Nại Sản Phẩm & Dịch Vụ
+            </div>
+
+            <form asp-action="YeuCau" method="post" class="p-4">
+                @Html.AntiForgeryToken()
+
+                <!-- Chọn sản phẩm -->
+                <div class="bb-form-group mb-4">
+                    <label for="maSerial" class="bb-label mb-2 fw-semibold">Sản phẩm cần khiếu nại <span class="text-danger">*</span></label>
+                    <select name="maSerial" id="maSerial" class="bb-input form-select" required style="height: auto; padding: 12px; font-size: 14px;">
+                        <option value="">-- Chọn sản phẩm của bạn --</option>
+                        @if (serials != null && serials.Count > 0)
+                        {
+                            foreach (var s in serials)
+                            {
+                                <option value="@s.Key">@s.Value</option>
+                            }
+                        }
+                    </select>
+                    <small class="text-muted mt-2 d-block">
+                        <i class="fas fa-info-circle me-1"></i> Chỉ hiển thị các sản phẩm thuộc đơn hàng đã hoàn thành.
+                    </small>
+                </div>
+
+                <!-- Nội dung khiếu nại -->
+                <div class="bb-form-group mb-4">
+                    <label for="noiDung" class="bb-label mb-2 fw-semibold">Nội dung chi tiết khiếu nại <span class="text-danger">*</span></label>
+                    <textarea name="noiDung" id="noiDung" class="bb-input" rows="6" required
+                              placeholder="Vui lòng mô tả chi tiết vấn đề bạn không hài lòng về sản phẩm hoặc dịch vụ đi kèm (Ví dụ: Sản phẩm nhận được bị trầy xước vỏ ngoài nghiêm trọng, phụ kiện đi kèm bị thiếu sạc, hoặc nhân viên giao hàng có thái độ không đúng mực...)"
+                              style="resize: none; font-size: 14px; padding: 12px;"></textarea>
+                </div>
+
+                <!-- Các nút hành động -->
+                <div class="d-flex gap-3 justify-content-end mt-4">
+                    <a asp-action="DanhSach" class="bb-btn bb-btn-outline" style="min-width: 120px; padding: 10px;">
+                        <i class="fas fa-times me-2"></i> Hủy
+                    </a>
+                    <button type="submit" class="bb-btn bb-btn-primary" style="min-width: 160px; padding: 10px;" id="btnSubmitYeuCau">
+                        <i class="fas fa-paper-plane me-2"></i> Gửi Khiếu Nại
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

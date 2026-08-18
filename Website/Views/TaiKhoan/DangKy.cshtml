@@ -1,0 +1,167 @@
+@model Website.Models.DangKyViewModel
+@{
+    ViewData["Title"] = "Đăng Ký Tài Khoản";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="bb-form-card" style="max-width:100%">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <div style="font-size:52px;margin-bottom:8px">📝</div>
+                <h1 class="bb-form-title">Tạo Tài Khoản Mới</h1>
+                <p class="bb-form-subtitle">Đăng ký để mua hàng, theo dõi đơn hàng và bảo hành</p>
+            </div>
+
+            <form asp-action="DangKy" method="post">
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="bb-alert bb-alert-danger mb-3"></div>
+
+                <div class="row g-4">
+                    <!-- ── Cột trái: Thông tin cá nhân ─────────────────────── -->
+                    <div class="col-md-6">
+                        <div class="bb-card-header mb-3">
+                            <i class="fas fa-user text-red"></i> Thông Tin Cá Nhân
+                        </div>
+
+                        <div class="bb-form-group">
+                            <label asp-for="TenKH" class="bb-label">Họ và tên <span class="text-red">*</span></label>
+                            <input asp-for="TenKH" class="bb-input" placeholder="VD: Nguyễn Văn A" id="txtTenKH" />
+                            <span asp-validation-for="TenKH" class="text-danger small"></span>
+                        </div>
+
+                        <div class="bb-form-group">
+                            <label asp-for="Email" class="bb-label">Email</label>
+                            <input asp-for="Email" class="bb-input" placeholder="email@example.com" id="txtEmail" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="bb-form-group">
+                            <label asp-for="SDT" class="bb-label">Số điện thoại</label>
+                            <input asp-for="SDT" class="bb-input" placeholder="0xxxxxxxxx (10 chữ số)" id="txtSDT" />
+                            <span asp-validation-for="SDT" class="text-danger small"></span>
+                        </div>
+
+                        <div class="bb-form-group">
+                            <label asp-for="DiaChi" class="bb-label">Địa chỉ</label>
+                            <input asp-for="DiaChi" class="bb-input" placeholder="Số nhà, đường, phường/xã, quận/huyện" id="txtDiaChi" />
+                            <span asp-validation-for="DiaChi" class="text-danger small"></span>
+                        </div>
+
+                        <!-- HSSV -->
+                        <div class="bb-card" style="background:#FFF3E0;border-color:#FFB300;margin-top:8px">
+                            <label class="d-flex align-items-center gap-2 mb-0" style="cursor:pointer;font-weight:600">
+                                <input asp-for="LaHSSV" id="chkHSSV"
+                                       onchange="toggleHSSV(this.checked)"
+                                       style="accent-color:#C62828;width:18px;height:18px" />
+                                <span>🎓 Tôi là Học Sinh / Sinh Viên</span>
+                            </label>
+                            <p style="font-size:12px;color:#E65100;margin:6px 0 0 26px">
+                                HSSV được hưởng ưu đãi trong chương trình Back To School (-10% Laptop)
+                            </p>
+
+                            <div id="hssv-info" style="display:none;margin-top:12px">
+                                <label asp-for="SinhNhat" class="bb-label">Ngày sinh</label>
+                                <input asp-for="SinhNhat" type="date" class="bb-input" id="dtSinhNhat" />
+                                <span asp-validation-for="SinhNhat" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Cột phải: Thông tin tài khoản ────────────────────── -->
+                    <div class="col-md-6">
+                        <div class="bb-card-header mb-3">
+                            <i class="fas fa-key text-red"></i> Thông Tin Tài Khoản
+                        </div>
+
+                        <div class="bb-form-group">
+                            <label asp-for="TenDangNhap" class="bb-label">
+                                Tên đăng nhập <span class="text-red">*</span>
+                            </label>
+                            <input asp-for="TenDangNhap" class="bb-input"
+                                   placeholder="Từ 4–50 ký tự" id="txtTenDangNhap" />
+                            <span asp-validation-for="TenDangNhap" class="text-danger small"></span>
+                            <small class="text-muted">Tên đăng nhập không thay đổi được sau khi đăng ký.</small>
+                        </div>
+
+                        <div class="bb-form-group">
+                            <label asp-for="MatKhau" class="bb-label">
+                                Mật khẩu <span class="text-red">*</span>
+                            </label>
+                            <div class="position-relative">
+                                <input asp-for="MatKhau" class="bb-input"
+                                       placeholder="Ít nhất 6 ký tự" id="txtMatKhau"
+                                       style="padding-right:44px" />
+                                <button type="button" class="bb-btn"
+                                        style="position:absolute;right:4px;top:50%;transform:translateY(-50%);
+                                               background:none;border:none;color:#9E9E9E;padding:6px;"
+                                        onclick="togglePwd('txtMatKhau','icon1')" title="Hiện/ẩn mật khẩu">
+                                    <i class="fas fa-eye" id="icon1"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="MatKhau" class="text-danger small"></span>
+                        </div>
+
+                        <div class="bb-form-group">
+                            <label asp-for="XacNhanMatKhau" class="bb-label">
+                                Xác nhận mật khẩu <span class="text-red">*</span>
+                            </label>
+                            <div class="position-relative">
+                                <input asp-for="XacNhanMatKhau" class="bb-input"
+                                       placeholder="Nhập lại mật khẩu" id="txtXacNhan"
+                                       style="padding-right:44px" />
+                                <button type="button" class="bb-btn"
+                                        style="position:absolute;right:4px;top:50%;transform:translateY(-50%);
+                                               background:none;border:none;color:#9E9E9E;padding:6px;"
+                                        onclick="togglePwd('txtXacNhan','icon2')" title="Hiện/ẩn mật khẩu">
+                                    <i class="fas fa-eye" id="icon2"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="XacNhanMatKhau" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Lưu ý bảo mật -->
+                        <div class="bb-card" style="background:#E8F5E9;border-color:#4CAF50;margin-top:8px">
+                            <div style="font-size:13px;color:#1B5E20">
+                                <i class="fas fa-shield-alt me-2"></i>
+                                <strong>Bảo mật:</strong> Mật khẩu được mã hoá SHA-256 trước khi lưu.
+                                Chúng tôi không lưu mật khẩu dạng thô.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3 mt-4 justify-content-end">
+                    <a asp-action="DangNhap" class="bb-btn bb-btn-outline">Đã có tài khoản</a>
+                    <button type="submit" class="bb-btn bb-btn-primary bb-btn-lg" id="btnDangKy">
+                        <i class="fas fa-user-plus me-2"></i> Tạo Tài Khoản
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function toggleHSSV(checked) {
+            document.getElementById('hssv-info').style.display = checked ? 'block' : 'none';
+        }
+        function togglePwd(inputId, iconId) {
+            const inp = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (inp.type === 'password') {
+                inp.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                inp.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+        // Init HSSV
+        const chk = document.getElementById('chkHSSV');
+        if (chk && chk.checked) toggleHSSV(true);
+    </script>
+}

@@ -1,0 +1,186 @@
+@{
+    ViewData["Title"] = string.IsNullOrEmpty(ViewBag.DanhMuc) ? "Tất Cả Sản Phẩm" : (string)ViewBag.DanhMuc;
+    var dtSP     = ViewBag.DanhSachLoaiSP as System.Data.DataTable;
+    var dtHSX    = ViewBag.DanhSachHSX    as System.Data.DataTable;
+    int tongSP   = (int)(ViewBag.TongSP ?? 0);
+    int trangHT  = (int)(ViewBag.TrangHienTai ?? 1);
+    int tongTrang= (int)(ViewBag.TongTrang ?? 0);
+    string dm    = ViewBag.DanhMuc ?? "";
+    string mah   = ViewBag.MaHang  ?? "";
+    string sq    = ViewBag.SearchQuery ?? "";
+
+    string FormatGia(object v) {
+        if (v == null || v == DBNull.Value) return "Liên hệ";
+        if (decimal.TryParse(v.ToString(), out decimal g)) return g.ToString("N0") + " ₫";
+        return "Liên hệ";
+    }
+    string DmIcon(string d) => d switch { "Laptop" => "💻", "Chuột" => "🖱️", "Bàn Phím" => "⌨️", _ => "📦" };
+}
+
+<!-- Breadcrumb -->
+<div class="bb-breadcrumb">
+    <a href="/">Trang chủ</a>
+    <span>/</span>
+    <span class="active">@(string.IsNullOrEmpty(dm) ? "Tất cả sản phẩm" : dm)</span>
+</div>
+
+<div class="row g-4">
+    <!-- ── SIDEBAR LỌC ──────────────────────────────────────────────── -->
+    <div class="col-lg-3">
+        <div class="bb-filter-sidebar">
+            <div class="bb-filter-title"><i class="fas fa-filter me-2 text-red"></i>Bộ Lọc</div>
+
+            <form method="get" asp-action="Index">
+                <!-- Tìm kiếm -->
+                <div class="mb-3">
+                    <input type="text" name="q" value="@sq"
+                           class="bb-input" placeholder="Tìm kiếm sản phẩm..." />
+                </div>
+
+                <!-- Danh mục -->
+                <div class="mb-3">
+                    <div class="bb-filter-title">Danh Mục</div>
+                    <label class="bb-filter-option">
+                        <input type="radio" name="danhMuc" value="" @(string.IsNullOrEmpty(dm) ? "checked" : "") />
+                        Tất cả
+                    </label>
+                    <label class="bb-filter-option">
+                        <input type="radio" name="danhMuc" value="Laptop" @(dm == "Laptop" ? "checked" : "") />
+                        💻 Laptop
+                    </label>
+                    <label class="bb-filter-option">
+                        <input type="radio" name="danhMuc" value="Chuột" @(dm == "Chuột" ? "checked" : "") />
+                        🖱️ Chuột
+                    </label>
+                    <label class="bb-filter-option">
+                        <input type="radio" name="danhMuc" value="Bàn Phím" @(dm == "Bàn Phím" ? "checked" : "") />
+                        ⌨️ Bàn Phím
+                    </label>
+                </div>
+
+                <!-- Hãng sản xuất -->
+                @if (dtHSX != null && dtHSX.Rows.Count > 0)
+                {
+                    <div class="mb-3">
+                        <div class="bb-filter-title">Hãng Sản Xuất</div>
+                        @foreach (System.Data.DataRow hsx in dtHSX.Rows)
+                        {
+                            <label class="bb-filter-option">
+                                <input type="radio" name="maHang"
+                                       value="@hsx["MaHang"]"
+                                       @(mah == hsx["MaHang"].ToString() ? "checked" : "") />
+                                @hsx["TenHang"]
+                            </label>
+                        }
+                    </div>
+                }
+
+                <button type="submit" class="bb-btn bb-btn-primary bb-btn-block">
+                    <i class="fas fa-search me-1"></i> Tìm kiếm
+                </button>
+                <a asp-action="Index" class="bb-btn bb-btn-outline bb-btn-block mt-2">
+                    <i class="fas fa-times me-1"></i> Xóa bộ lọc
+                </a>
+            </form>
+        </div>
+    </div>
+
+    <!-- ── DANH SÁCH SẢN PHẨM ────────────────────────────────────────── -->
+    <div class="col-lg-9">
+        <div class="bb-section-header mb-3">
+            <h1 class="bb-section-title" style="font-size:20px">
+                @DmIcon(dm) @(string.IsNullOrEmpty(dm) ? "Tất Cả Sản Phẩm" : dm)
+            </h1>
+            <span class="text-muted" style="font-size:13px">@tongSP sản phẩm</span>
+        </div>
+
+        @if (!string.IsNullOrEmpty(sq))
+        {
+            <div class="bb-alert bb-alert-info mb-3" style="background:#E3F2FD;border-left:4px solid #1565C0;color:#0D47A1">
+                <i class="fas fa-search"></i>
+                Kết quả tìm kiếm cho: <strong>"@sq"</strong> — @tongSP sản phẩm
+            </div>
+        }
+
+        @if (dtSP == null || dtSP.Rows.Count == 0)
+        {
+            <div class="text-center py-5">
+                <div style="font-size:64px;margin-bottom:16px">📭</div>
+                <h3 style="font-size:20px;font-weight:700;color:#424242">Không tìm thấy sản phẩm</h3>
+                <p class="text-muted">Thử thay đổi bộ lọc hoặc từ khoá tìm kiếm</p>
+                <a asp-action="Index" class="bb-btn bb-btn-primary mt-2">Xem tất cả sản phẩm</a>
+            </div>
+        }
+        else
+        {
+            <div class="row g-3">
+                @foreach (System.Data.DataRow row in dtSP.Rows)
+                {
+                    <div class="col-6 col-md-4">
+                        <div class="bb-product-card">
+                            <div class="bb-product-img">
+                                @DmIcon(row["DanhMuc"]?.ToString() ?? "")
+                            </div>
+                            <div class="bb-product-body">
+                                <div class="bb-product-brand">@row["TenHang"]</div>
+                                <div class="bb-product-name">@row["TenLoai"]</div>
+                                <div class="bb-product-price">@FormatGia(row["GiaBanGoc"])</div>
+                                <div class="bb-product-actions">
+                                    <a asp-controller="SanPham" asp-action="ChiTiet"
+                                       asp-route-maLoaiSP="@row["MaLoaiSP"]"
+                                       class="bb-btn bb-btn-outline bb-btn-sm flex-fill">
+                                        Xem chi tiết
+                                    </a>
+                                    <form asp-controller="GioHang" asp-action="Them" method="post" class="d-flex">
+                                        <input type="hidden" name="maLoaiSP" value="@row["MaLoaiSP"]" />
+                                        <button type="submit" class="bb-btn bb-btn-primary bb-btn-sm bb-btn-icon"
+                                                title="Thêm vào giỏ">
+                                            <i class="fas fa-cart-plus"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Phân trang -->
+            @if (tongTrang > 1)
+            {
+                <div class="bb-pagination mt-4">
+                    @if (trangHT > 1)
+                    {
+                        <a asp-action="Index"
+                           asp-route-danhMuc="@dm" asp-route-maHang="@mah"
+                           asp-route-q="@sq" asp-route-trang="@(trangHT - 1)"
+                           class="bb-page-btn">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    }
+
+                    @for (int p = Math.Max(1, trangHT - 2); p <= Math.Min(tongTrang, trangHT + 2); p++)
+                    {
+                        <a asp-action="Index"
+                           asp-route-danhMuc="@dm" asp-route-maHang="@mah"
+                           asp-route-q="@sq" asp-route-trang="@p"
+                           class="bb-page-btn @(p == trangHT ? "active" : "")">@p</a>
+                    }
+
+                    @if (trangHT < tongTrang)
+                    {
+                        <a asp-action="Index"
+                           asp-route-danhMuc="@dm" asp-route-maHang="@mah"
+                           asp-route-q="@sq" asp-route-trang="@(trangHT + 1)"
+                           class="bb-page-btn">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    }
+                </div>
+                <p class="text-center text-muted mt-2" style="font-size:13px">
+                    Trang @trangHT / @tongTrang — @tongSP sản phẩm
+                </p>
+            }
+        }
+    </div>
+</div>

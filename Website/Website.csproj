@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Session support -->
+    <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.3.0" />
+    <!-- ConfigurationManager bridge cho BUS/DAL đọc connection string -->
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BUS_HTQLCuaHangLaptop\BUS_HTQLCuaHangLaptop.csproj" />
+    <ProjectReference Include="..\DTO_HTQLCuaHangLaptop\DTO_HTQLCuaHangLaptop.csproj" />
+  </ItemGroup>
+
+</Project>

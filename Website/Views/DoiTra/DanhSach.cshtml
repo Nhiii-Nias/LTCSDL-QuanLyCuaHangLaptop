@@ -1,0 +1,87 @@
+@{
+    ViewData["Title"] = "Đổi Trả Của Tôi";
+    var dtDT = ViewBag.DsDoiTra as System.Data.DataTable;
+}
+
+<div class="bb-breadcrumb">
+    <a href="/">Trang chủ</a><span>/</span><span class="active">Đổi trả của tôi</span>
+</div>
+
+<h1 class="bb-section-title mb-4">🔄 Đổi Trả Của Tôi</h1>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
+        <i class="fas fa-check-circle me-2"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="bb-card shadow-sm">
+            <div class="bb-card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-exchange-alt text-red me-2"></i> Phiếu Đổi Trả Sản Phẩm</span>
+                <a asp-action="YeuCau" class="bb-btn bb-btn-primary btn-sm py-1 px-3">
+                    <i class="fas fa-plus-circle me-1"></i> Tạo yêu cầu mới
+                </a>
+            </div>
+            
+            <div class="p-3">
+                @if (dtDT == null || dtDT.Rows.Count == 0)
+                {
+                    <div class="text-center py-5">
+                        <div class="text-muted fs-1 mb-3"><i class="fas fa-box-open"></i></div>
+                        <p class="text-muted">Bạn chưa gửi yêu cầu đổi trả sản phẩm nào.</p>
+                        <a asp-action="YeuCau" class="bb-btn bb-btn-outline mt-2">Gửi yêu cầu đầu tiên</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="bb-table table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Mã phiếu</th>
+                                    <th>Mã đơn hàng</th>
+                                    <th>Số Serial SP</th>
+                                    <th>Ngày yêu cầu</th>
+                                    <th>Hình thức xử lý</th>
+                                    <th>Trạng thái</th>
+                                    <th>Lý do đổi trả</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (System.Data.DataRow r in dtDT.Rows)
+                                {
+                                    string tt = r["TrangThai"]?.ToString() ?? "";
+                                    string cls = tt == "Hoàn Thành" ? "bb-badge-success" :
+                                                 tt == "Đang Xử Lý" ? "bb-badge-warning" : "bb-badge-danger";
+                                    <tr>
+                                        <td style="font-size:13px; font-family:monospace; font-weight:bold; color:var(--text-color);">@r["MaPhieuDT"]</td>
+                                        <td style="font-size:13px; font-family:monospace;">@r["MaDH"]</td>
+                                        <td style="font-size:13px; font-family:monospace; color: #555;">@r["MaSerialSP"]</td>
+                                        <td style="font-size:13px">@Convert.ToDateTime(r["NgayYeuCau"]).ToString("dd/MM/yyyy")</td>
+                                        <td style="font-size:13px; font-weight:500;">@r["LoaiXuLy"]</td>
+                                        <td><span class="bb-badge @cls px-2 py-1" style="font-size:11px">@tt</span></td>
+                                        <td style="font-size:13px; max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="@r["LyDo"]">
+                                            @r["LyDo"]
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

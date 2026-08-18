@@ -1,0 +1,66 @@
+@model dynamic
+@{
+    ViewData["Title"] = "Yêu Cầu Bảo Hành Mới";
+    var serials = ViewBag.Serials as List<KeyValuePair<string, string>>;
+}
+
+<!-- Breadcrumb -->
+<div class="bb-breadcrumb">
+    <a href="/">Trang chủ</a>
+    <span>/</span>
+    <a asp-action="DanhSach">Bảo hành của tôi</a>
+    <span>/</span>
+    <span class="active">Yêu cầu bảo hành mới</span>
+</div>
+
+<h1 class="bb-section-title mb-4">🛡️ Gửi Yêu Cầu Bảo Hành</h1>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="bb-card shadow-sm">
+            <div class="bb-card-header">
+                <i class="fas fa-file-invoice text-red"></i> Đăng Ký Yêu Cầu Sửa Chữa & Bảo Hành
+            </div>
+
+            <form asp-action="YeuCau" method="post" class="p-3">
+                @Html.AntiForgeryToken()
+
+                <!-- Chọn sản phẩm -->
+                <div class="bb-form-group mb-4">
+                    <label for="maSerial" class="bb-label mb-2">Sản phẩm cần bảo hành <span class="text-danger">*</span></label>
+                    <select name="maSerial" id="maSerial" class="bb-input form-select" required style="height: auto; padding: 12px;">
+                        <option value="">-- Chọn sản phẩm của bạn --</option>
+                        @if (serials != null && serials.Count > 0)
+                        {
+                            foreach (var s in serials)
+                            {
+                                <option value="@s.Key">@s.Value</option>
+                            }
+                        }
+                    </select>
+                    <small class="text-muted mt-1 d-block">
+                        Chỉ hiển thị các sản phẩm đã mua thuộc đơn hàng hợp lệ (chưa bị hủy).
+                    </small>
+                </div>
+
+                <!-- Lý do lỗi -->
+                <div class="bb-form-group mb-4">
+                    <label for="lyDoLoi" class="bb-label mb-2">Mô tả chi tiết lỗi gặp phải <span class="text-danger">*</span></label>
+                    <textarea name="lyDoLoi" id="lyDoLoi" class="bb-input" rows="5" required
+                              placeholder="Vui lòng mô tả chi tiết biểu hiện lỗi của sản phẩm (ví dụ: máy không lên nguồn, màn hình bị sọc xanh, bàn phím liệt nút cách...)"
+                              style="resize: none;"></textarea>
+                </div>
+
+                <!-- Các nút hành động -->
+                <div class="d-flex gap-3 justify-content-end mt-4">
+                    <a asp-action="DanhSach" class="bb-btn bb-btn-outline" style="min-width: 120px;">
+                        <i class="fas fa-times me-2"></i> Hủy
+                    </a>
+                    <button type="submit" class="bb-btn bb-btn-primary" style="min-width: 160px;" id="btnSubmitYeuCau">
+                        <i class="fas fa-paper-plane me-2"></i> Gửi Yêu Cầu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

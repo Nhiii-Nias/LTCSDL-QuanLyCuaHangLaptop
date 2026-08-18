@@ -1,0 +1,43 @@
+@* Partial: Banner thẻ khuyến mãi
+   Model: System.Data.DataRow (row từ DataTable LayKhuyenMaiHieuLuc)
+   Dùng: @await Html.PartialAsync("_KhuyenMaiCard", km)
+*@
+@model System.Data.DataRow
+
+@{
+    string tenKM    = Model["TenKM"]?.ToString()   ?? "";
+    string doiTuong = Model["DoiTuong"]?.ToString() ?? "Tất cả";
+
+    string ngayBD = Model["NgayBatDau"] != DBNull.Value
+        ? Convert.ToDateTime(Model["NgayBatDau"]).ToString("dd/MM")
+        : "--";
+    string ngayKT = Model["NgayKetThuc"] != DBNull.Value
+        ? Convert.ToDateTime(Model["NgayKetThuc"]).ToString("dd/MM/yyyy")
+        : "--";
+
+    string mucGiamSP = Model["MucGiamSP"] != DBNull.Value
+        ? Model["MucGiamSP"].ToString() + "%"
+        : null;
+    string mucGiamDH = Model["MucGiamDH"] != DBNull.Value
+        ? Model["MucGiamDH"].ToString() + "%"
+        : null;
+}
+
+<div class="bb-promo-card">
+    <div class="bb-promo-label">🔥 ĐANG DIỄN RA</div>
+    <div class="bb-promo-name">@tenKM</div>
+    <div class="bb-promo-desc">
+        <span>Đối tượng: <strong>@doiTuong</strong></span>
+        @if (mucGiamSP != null)
+        {
+            <span class="ms-1">— Giảm <strong>@mucGiamSP</strong> SP</span>
+        }
+        @if (mucGiamDH != null)
+        {
+            <span class="ms-1">— Giảm <strong>@mucGiamDH</strong> đơn hàng</span>
+        }
+    </div>
+    <div class="bb-promo-date">
+        📅 @ngayBD – @ngayKT
+    </div>
+</div>

@@ -1,0 +1,234 @@
+@model dynamic
+@{
+    ViewData["Title"] = "Thanh toán chuyển khoản qua mã QR";
+    var donHang = ViewBag.DonHang as DTO_HTQLCuaHangLaptop.DTO_DonHang;
+    var scanUrl = ViewBag.ScanUrl as string;
+    var qrImageUrl = ViewBag.QrImageUrl as string;
+}
+
+<div class="bb-breadcrumb">
+    <a href="/">Trang chủ</a>
+    <span>/</span>
+    <a asp-controller="GioHang" asp-action="Index">Giỏ hàng</a>
+    <span>/</span>
+    <span class="active">Thanh toán QR</span>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="bb-qr-card shadow-lg border-0 rounded-4 overflow-hidden">
+                <!-- Header -->
+                <div class="bb-qr-header text-center text-white py-4 px-3" style="background: linear-gradient(135deg, #c62828 0%, #b71c1c 100%);">
+                    <h3 class="mb-1 font-weight-bold" style="letter-spacing: 0.5px;">🏦 THANH TOÁN CHUYỂN KHOẢN</h3>
+                    <p class="mb-0 text-white-50 small">Mã đơn hàng: <strong class="text-white">@donHang?.MaDH</strong></p>
+                </div>
+
+                <!-- Card Body -->
+                <div class="card-body p-4 bg-white" style="border: 1px solid rgba(0,0,0,.08); border-top: none; border-bottom: none; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
+                    <div class="row text-center mb-4">
+                        <div class="col">
+                            <span class="text-muted d-block small text-uppercase font-weight-bold tracking-wider" style="font-size: 11px; letter-spacing: 1px;">Số tiền cần thanh toán</span>
+                            <h2 class="text-danger font-weight-bolder mb-1" style="font-size: 32px; font-family: 'Inter', sans-serif;">
+                                @((donHang?.TienSauGiam ?? donHang?.TongTien ?? 0).ToString("N0")) ₫
+                            </h2>
+                            @if (donHang?.TienSauGiam < donHang?.TongTien)
+                            {
+                                <div>
+                                    <span class="text-muted text-decoration-line-through small me-2">@(donHang.TongTien.ToString("N0")) ₫</span>
+                                    <span class="badge bg-success text-white px-2 py-1 rounded" style="font-size: 10px;">Đã giảm giá</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- QR Display and Scan animation -->
+                    <div class="bb-qr-container-wrapper d-flex justify-content-center align-items-center mb-4">
+                        <div class="bb-qr-scanner-box position-relative p-3 bg-light border rounded-3 shadow-sm">
+                            <a href="@scanUrl" target="_blank" title="Nhấp vào để giả lập quét mã QR">
+                                <img src="@qrImageUrl" alt="Mã QR Thanh Toán" class="img-fluid d-block" style="width: 250px; height: 250px; border-radius: 4px;" />
+                                <!-- Laser Line Scan Effect -->
+                                <div class="bb-scan-line"></div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="text-center mb-4">
+                        <div class="bb-status-pulse d-inline-flex align-items-center justify-content-center px-4 py-2 rounded-pill bg-light border" id="statusContainer">
+                            <span class="bb-pulse-dot me-2" id="statusDot"></span>
+                            <span class="small text-secondary font-weight-500" id="statusText">Đang chờ bạn quét mã QR...</span>
+                        </div>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div class="bb-instructions p-3 rounded bg-light mb-4 text-secondary small" style="border: 1px dashed #ddd;">
+                        <h6 class="text-dark font-weight-bold mb-2">📌 Hướng dẫn thanh toán:</h6>
+                        <ol class="mb-0 ps-3 text-muted">
+                            <li class="mb-2">Mở ứng dụng <strong>Quét mã QR</strong> trên điện thoại di động của bạn (Camera, Zalo, Ngân hàng...).</li>
+                            <li class="mb-2">Quét mã QR hiển thị ở trên (chỉ cần quét để mở đường dẫn, không thực hiện chuyển tiền thật).</li>
+                            <li class="mb-2">Sau khi quét thành công, hệ thống sẽ tự động cập nhật trạng thái đơn hàng này thành <strong>Đang Giao</strong> và tự động chuyển hướng màn hình.</li>
+                        </ol>
+                    </div>
+
+                    <!-- Simulator Trigger button for local testing -->
+                    <div class="bb-test-simulator text-center border-top pt-3">
+                        <p class="text-muted small mb-2"><i class="fas fa-laptop me-1"></i> Bạn đang kiểm thử trên máy tính / localhost?</p>
+                        <a href="@scanUrl" target="_blank" class="btn btn-outline-danger btn-sm rounded-pill px-4 shadow-sm" style="transition: all 0.3s ease;">
+                            <i class="fas fa-mobile-alt me-2"></i> Giả lập quét mã QR (Mở tab mới)
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Card Footer -->
+                <div class="card-footer bg-light border-top-0 py-3 text-center rounded-bottom-4" style="border: 1px solid rgba(0,0,0,.08); border-top: none;">
+                    <a asp-controller="DonHang" asp-action="Index" class="text-decoration-none small text-muted" style="transition: color 0.2s;">
+                        <i class="fas fa-chevron-left me-1"></i> Quay lại danh sách đơn hàng
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+<style>
+    /* Pulse Animation for Status Dot */
+    .bb-pulse-dot {
+        width: 8px;
+        height: 8px;
+        background-color: #f57c00;
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0 0 0 rgba(245, 124, 0, 0.7);
+        animation: pulse-dot 1.5s infinite;
+    }
+    
+    .bb-pulse-dot.success {
+        background-color: #2e7d32;
+        box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.7);
+        animation: pulse-dot-success 1.5s infinite;
+    }
+
+    @@keyframes pulse-dot {
+        0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(245, 124, 0, 0.7);
+        }
+        70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 8px rgba(245, 124, 0, 0);
+        }
+        100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(245, 124, 0, 0);
+        }
+    }
+    
+    @@keyframes pulse-dot-success {
+        0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.7);
+        }
+        70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 8px rgba(46, 125, 50, 0);
+        }
+        100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(46, 125, 50, 0);
+        }
+    }
+
+    /* Scanning laser effect on QR code */
+    .bb-qr-scanner-box {
+        overflow: hidden;
+    }
+    
+    .bb-qr-scanner-box img {
+        transition: transform 0.3s ease;
+    }
+    
+    .bb-qr-scanner-box:hover img {
+        transform: scale(1.02);
+    }
+
+    .bb-scan-line {
+        position: absolute;
+        width: 90%;
+        height: 3px;
+        background: linear-gradient(to right, rgba(198,40,40,0) 0%, rgba(198,40,40,0.8) 50%, rgba(198,40,40,0) 100%);
+        box-shadow: 0 2px 6px rgba(198,40,40,0.6);
+        left: 5%;
+        animation: scan-move 2.5s linear infinite;
+        pointer-events: none;
+    }
+
+    @@keyframes scan-move {
+        0% {
+            top: 5%;
+        }
+        50% {
+            top: 95%;
+        }
+        100% {
+            top: 5%;
+        }
+    }
+
+    /* Custom QR card styling */
+    .bb-qr-card {
+        border: none;
+        background: #ffffff;
+    }
+    
+    .bb-test-simulator a:hover {
+        background-color: #c62828 !important;
+        color: #ffffff !important;
+        border-color: #c62828 !important;
+    }
+</style>
+}
+
+@section Scripts {
+<script>
+    const maDH = '@donHang?.MaDH';
+    const checkInterval = 2000; // check every 2 seconds
+
+    if (maDH) {
+        const intervalId = setInterval(() => {
+            fetch(`/GioHang/KiemTraTrangThaiDH?maDH=${maDH}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('Order status checking:', data.trangThai);
+                        if (data.trangThai === 'Đang Giao') {
+                            clearInterval(intervalId);
+                            
+                            // Cập nhật text trạng thái trước khi chuyển trang
+                            const statusText = document.getElementById('statusText');
+                            const statusDot = document.getElementById('statusDot');
+                            const statusContainer = document.getElementById('statusContainer');
+                            
+                            if (statusText) statusText.innerText = 'Thanh toán thành công! Đang chuyển hướng...';
+                            if (statusDot) {
+                                statusDot.classList.remove('bb-pulse-dot');
+                                statusDot.classList.add('bb-pulse-dot', 'success');
+                            }
+                            if (statusContainer) {
+                                statusContainer.style.borderColor = '#2e7d32';
+                                statusContainer.style.background = '#e8f5e9';
+                                statusText.className = 'small text-success font-weight-bold';
+                            }
+                            
+                            // Chuyển hướng sang trang chi tiết đơn hàng
+                            setTimeout(() => {
+                                window.location.href = `/DonHang/ChiTiet?maDH=${maDH}`;
+                            }, 1500);
+                        }
+                    }
+                })
+                .catch(err => console.error('Error checking order status:', err));
+        }, checkInterval);
+    }
+</script>
+}

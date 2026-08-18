@@ -1,0 +1,142 @@
+@model List<Website.Models.GioHangItem>
+@{
+    ViewData["Title"] = "Giỏ Hàng";
+    decimal tongTien = Model?.Sum(x => x.ThanhTien) ?? 0;
+    int tongSL = Model?.Sum(x => x.SoLuong) ?? 0;
+}
+
+<!-- Breadcrumb -->
+<div class="bb-breadcrumb">
+    <a href="/">Trang chủ</a>
+    <span>/</span>
+    <span class="active">Giỏ hàng</span>
+</div>
+
+<h1 class="bb-section-title mb-4">🛒 Giỏ Hàng (@tongSL sản phẩm)</h1>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="text-center py-5">
+        <div style="font-size:72px;margin-bottom:16px">🛒</div>
+        <h2 style="font-size:22px;font-weight:700;color:#424242">Giỏ hàng của bạn đang trống</h2>
+        <p class="text-muted">Hãy thêm sản phẩm vào giỏ để tiến hành đặt hàng</p>
+        <a asp-controller="SanPham" asp-action="Index" class="bb-btn bb-btn-primary bb-btn-lg mt-3">
+            <i class="fas fa-shopping-bag me-2"></i> Tiếp tục mua sắm
+        </a>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        <!-- Danh sách sản phẩm -->
+        <div class="col-lg-8">
+            <div class="bb-card p-0" style="overflow:hidden">
+                @foreach (var item in Model)
+                {
+                    string icon = item.DanhMuc switch { "Laptop" => "💻", "Chuột" => "🖱️", "Bàn Phím" => "⌨️", _ => "📦" };
+                    <div class="bb-cart-item">
+                        <div class="bb-cart-item-icon">@icon</div>
+                        <div class="flex-fill">
+                            <div class="bb-product-brand">@item.TenHang</div>
+                            <div style="font-weight:700;font-size:14px;margin-bottom:4px">@item.TenLoai</div>
+                            <div class="text-red fw-800" style="font-size:16px">
+                                @item.GiaBan.ToString("N0") ₫
+                            </div>
+                        </div>
+
+                        <!-- Số lượng -->
+                        <form asp-action="CapNhatSoLuong" method="post" class="d-flex align-items-center">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="maLoaiSP" value="@item.MaLoaiSP" />
+                            <div class="bb-qty-control">
+                                <button type="button" class="bb-qty-btn"
+                                        onclick="changeQty(this, -1)">−</button>
+                                <input type="number" name="soLuong" class="bb-qty-input"
+                                       value="@item.SoLuong" min="1" max="99"
+                                       onchange="this.form.submit()" id="qty-@item.MaLoaiSP" />
+                                <button type="button" class="bb-qty-btn"
+                                        onclick="changeQty(this, 1)">+</button>
+                            </div>
+                        </form>
+
+                        <!-- Thành tiền -->
+                        <div style="min-width:100px;text-align:right;font-weight:800;font-size:15px;color:#1A1A2E">
+                            @item.ThanhTien.ToString("N0") ₫
+                        </div>
+
+                        <!-- Xóa -->
+                        <form asp-action="Xoa" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="maLoaiSP" value="@item.MaLoaiSP" />
+                            <button type="submit" class="bb-btn bb-btn-icon"
+                                    style="background:none;border:none;color:#9E9E9E;"
+                                    title="Xóa khỏi giỏ"
+                                    onclick="return confirm('Xóa sản phẩm này khỏi giỏ hàng?')">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    </div>
+                }
+            </div>
+
+            <div class="d-flex justify-content-between mt-3">
+                <a asp-controller="SanPham" asp-action="Index" class="bb-btn bb-btn-outline">
+                    <i class="fas fa-arrow-left me-2"></i> Tiếp tục mua sắm
+                </a>
+            </div>
+        </div>
+
+        <!-- Tóm tắt đơn hàng -->
+        <div class="col-lg-4">
+            <div class="bb-order-summary">
+                <div class="bb-card-header">
+                    <i class="fas fa-receipt text-red"></i> Tóm Tắt Đơn Hàng
+                </div>
+
+                @foreach (var item in Model)
+                {
+                    <div class="bb-summary-row">
+                        <span style="font-size:13px;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="@item.TenLoai">
+                            @item.TenLoai × @item.SoLuong
+                        </span>
+                        <span style="font-weight:600;white-space:nowrap">@item.ThanhTien.ToString("N0") ₫</span>
+                    </div>
+                }
+
+                <div class="bb-summary-row">
+                    <span>Phí giao hàng</span>
+                    <span class="bb-badge bb-badge-success">Miễn phí</span>
+                </div>
+
+                <div class="bb-summary-total">
+                    <span>Tổng cộng</span>
+                    <span>@tongTien.ToString("N0") ₫</span>
+                </div>
+
+                <a asp-action="DatHang" class="bb-btn bb-btn-primary bb-btn-block bb-btn-lg mt-4">
+                    <i class="fas fa-bolt me-2"></i> Đặt Hàng Ngay
+                </a>
+
+                <div class="text-center mt-3">
+                    <small class="text-muted">
+                        <i class="fas fa-shield-alt me-1"></i> Thanh toán an toàn, bảo mật
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+<script>
+function changeQty(btn, delta) {
+    const container = btn.closest('.bb-qty-control');
+    const input = container.querySelector('input[type="number"]');
+    let val = parseInt(input.value) + delta;
+    if (val < 1) val = 1;
+    if (val > 99) val = 99;
+    input.value = val;
+    input.dispatchEvent(new Event('change'));
+}
+</script>
+}

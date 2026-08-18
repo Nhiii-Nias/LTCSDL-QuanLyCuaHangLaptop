@@ -1,0 +1,129 @@
+@using DTO_HTQLCuaHangLaptop
+@{
+    ViewData["Title"] = "Thông Tin Tài Khoản";
+    var kh   = ViewBag.KhachHang   as DTO_KhachHang;
+    var khLe = ViewBag.KhachHangLe as DTO_KhachHangLe;
+    var tenKH = Context.Session.GetString("TenKH") ?? "";
+}
+
+<div class="row g-4">
+    <!-- Sidebar -->
+    <div class="col-md-3">
+        <div class="bb-card text-center py-4">
+            <div style="font-size:72px;margin-bottom:12px">👤</div>
+            <div style="font-weight:700;font-size:17px">@tenKH</div>
+            <div class="bb-badge bb-badge-success mt-2">Khách hàng lẻ</div>
+            <hr class="my-3">
+            <div class="d-flex flex-column gap-2">
+                <a asp-controller="DonHang" asp-action="Index" class="bb-btn bb-btn-outline bb-btn-sm">
+                    <i class="fas fa-box me-2"></i> Đơn hàng
+                </a>
+                <a asp-controller="BaoHanh" asp-action="DanhSach" class="bb-btn bb-btn-outline bb-btn-sm">
+                    <i class="fas fa-shield-alt me-2"></i> Bảo hành
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nội dung -->
+    <div class="col-md-9">
+        <!-- Thông tin cá nhân -->
+        <div class="bb-card mb-4">
+            <div class="bb-card-header">
+                <i class="fas fa-user text-red"></i> Thông Tin Cá Nhân
+            </div>
+            @if (kh != null)
+            {
+                <form asp-action="CapNhatThongTin" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="bb-label">Họ và tên</div>
+                            <div style="font-size:15px;font-weight:600;padding: 8px 0;">@kh.TenKH</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="bb-label">Loại khách hàng</div>
+                            <div style="padding: 8px 0;"><span class="bb-badge bb-badge-info">@kh.LoaiKH</span></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="bb-label" for="txtEmail">Email</label>
+                            <input type="email" id="txtEmail" name="email" class="bb-input" value="@kh.Email" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="bb-label" for="txtSDT">Số điện thoại</label>
+                            <input type="text" id="txtSDT" name="sdt" class="bb-input" value="@kh.SDT" required pattern="^\d{10}$" title="Số điện thoại phải gồm đúng 10 chữ số" />
+                        </div>
+                        <div class="col-12">
+                            <label class="bb-label" for="txtDiaChi">Địa chỉ</label>
+                            <input type="text" id="txtDiaChi" name="diaChi" class="bb-input" value="@kh.DiaChi" required />
+                        </div>
+                        @if (khLe != null)
+                        {
+                            <div class="col-md-6">
+                                <div class="bb-label">Là HSSV</div>
+                                <div style="padding: 8px 0;">
+                                    @if (khLe.LaHSSV)
+                                    {
+                                        <span class="bb-badge bb-badge-warning">🎓 Học sinh / Sinh viên</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Không</span>
+                                    }
+                                </div>
+                            </div>
+                            @if (khLe.LaHSSV && khLe.SinhNhat.HasValue)
+                            {
+                                <div class="col-md-6">
+                                    <div class="bb-label">Ngày sinh</div>
+                                    <div style="font-size:14px;padding: 8px 0;">@khLe.SinhNhat.Value.ToString("dd/MM/yyyy")</div>
+                                </div>
+                            }
+                        }
+                        <div class="col-md-6">
+                            <div class="bb-label">Ngày tạo tài khoản</div>
+                            <div style="font-size:14px;padding: 8px 0;">@kh.NgayTao.ToString("dd/MM/yyyy")</div>
+                        </div>
+                        <div class="col-12 mt-3">
+                            <button type="submit" class="bb-btn bb-btn-primary">
+                                <i class="fas fa-save me-2"></i> Lưu Thay Đổi
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <p class="text-muted">Không thể tải thông tin tài khoản.</p>
+            }
+        </div>
+
+        <!-- Đổi mật khẩu -->
+        <div class="bb-card">
+            <div class="bb-card-header">
+                <i class="fas fa-key text-red"></i> Đổi Mật Khẩu
+            </div>
+            <form asp-action="DoiMatKhau" method="post" style="max-width:400px">
+                @Html.AntiForgeryToken()
+                <div class="bb-form-group">
+                    <label class="bb-label">Mật khẩu hiện tại</label>
+                    <input type="password" name="matKhauCu" class="bb-input"
+                           placeholder="Nhập mật khẩu hiện tại" required id="txtMkCu" />
+                </div>
+                <div class="bb-form-group">
+                    <label class="bb-label">Mật khẩu mới</label>
+                    <input type="password" name="matKhauMoi" class="bb-input"
+                           placeholder="Ít nhất 6 ký tự" required minlength="6" id="txtMkMoi" />
+                </div>
+                <div class="bb-form-group">
+                    <label class="bb-label">Xác nhận mật khẩu mới</label>
+                    <input type="password" name="xacNhanMatKhauMoi" class="bb-input"
+                           placeholder="Nhập lại mật khẩu mới" required id="txtXacNhan" />
+                </div>
+                <button type="submit" class="bb-btn bb-btn-primary">
+                    <i class="fas fa-key me-2"></i> Cập Nhật Mật Khẩu
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

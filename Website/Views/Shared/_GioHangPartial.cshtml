@@ -1,0 +1,23 @@
+@* Partial: Icon giỏ hàng + badge số lượng (dùng trong Layout header) *@
+@{
+    var soLuongGio = Context.Session.GetString("SoLuongGio") ?? "0";
+    var tongTienGio = Context.Session.GetString("TongTienGio") ?? "0";
+    int soLuong = int.TryParse(soLuongGio, out int sl) ? sl : 0;
+    decimal tongTien = decimal.TryParse(tongTienGio, out decimal tt) ? tt : 0;
+}
+
+<a asp-controller="GioHang" asp-action="Index" class="bb-action-btn bb-cart-wrapper" title="Giỏ hàng">
+    <i class="fas fa-shopping-cart icon"></i>
+    <span class="bb-cart-badge" id="cartBadgePartial" style="display:@(soLuong > 0 ? "flex" : "none")">
+        @(soLuong > 0 ? soLuong.ToString() : "0")
+    </span>
+    <span class="label">Giỏ hàng</span>
+    @if (tongTien > 0)
+    {
+        <span class="bb-cart-price" id="cartPricePartial">@tongTien.ToString("N0")đ</span>
+    }
+    else
+    {
+        <span class="bb-cart-price" id="cartPricePartial" style="display:none">0đ</span>
+    }
+</a>
