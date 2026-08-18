@@ -9,8 +9,7 @@
 
 **Tiểu luận môn Lập Trình Cơ Sở Dữ Liệu**
 
-👨‍🎓 Sinh viên: **Nguyễn Yến Nhi** | MSSV: **DH23IM01**  
-👨‍🏫 Giảng viên hướng dẫn: **ThS. Phạm Chí Công**
+👨‍🎓 Sinh viên: **Nguyễn Yến Nhi** 
 
 </div>
 
@@ -582,8 +581,7 @@ Cảm ơn các thư viện & công nghệ mã nguồn mở:
 
 **Câu hỏi hoặc góp ý?**
 - 👨‍💻 Nguyễn Yến Nhi — [GitHub](https://github.com/Nhiii-Nias)
-- 📧 Email: DH23IM01@ou.edu.vn
-- 👨‍🏫 GVHD: **ThS. Phạm Chí Công**
+- 📧 Email: nnynnias@gmail.com
 
 ---
 
